@@ -41,3 +41,10 @@ DB_NAME=tcc_db
 
 (bash) docker ps
 
+-------
+
+**Rodar o código**
+
+(bash) python main.py
+
+deve aparecer: Running on http://127.0.0.1:5000
