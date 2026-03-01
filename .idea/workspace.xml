@@ -4,18 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/ProjetoTCC.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="first coomit">
+      <change afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/extensions.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/compra.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/evento.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/ingresso.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/repositories/evento_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/transacao_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -28,6 +42,9 @@
   "associatedIndex": 6
 }]]></component>
   <component name="ProjectId" id="3ABr60q3isBfcq4HJAL06u3a8TR" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -60,6 +77,19 @@
       <option name="presentableId" value="Default" />
       <updated>1772076625655</updated>
     </task>
+    <task id="LOCAL-00001" summary="first coomit">
+      <option name="closed" value="true" />
+      <created>1772079643475</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1772079643475</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="first coomit" />
+    <option name="LAST_COMMIT_MESSAGE" value="first coomit" />
   </component>
 </project>
