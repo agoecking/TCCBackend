@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="Teste">
-      <change beforePath="$PROJECT_DIR$/app/interfaces/icrud.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/interfaces/icrud.py" afterDir="false" />
+    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Fix: tentativa de corrigir o problema de conexão com mysql">
+      <change afterPath="$PROJECT_DIR$/create_tables.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/usuario.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/usuario_cliente.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario_cliente.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/models/usuario_organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario_organizacao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -150,7 +151,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772741774660</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="#Fix: tentativa de corrigir o problema de conexão com mysql">
+      <option name="closed" value="true" />
+      <created>1772742274544</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1772742274545</updated>
+    </task>
+    <task id="LOCAL-00010" summary="#Fix: tentativa de corrigir o problema de conexão com mysql">
+      <option name="closed" value="true" />
+      <created>1772742293289</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1772742293289</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -161,6 +178,7 @@
     <MESSAGE value="#Feature: mudança no código para se adequar ao diagrama" />
     <MESSAGE value="#fix: nome" />
     <MESSAGE value="Teste" />
-    <option name="LAST_COMMIT_MESSAGE" value="Teste" />
+    <MESSAGE value="#Fix: tentativa de corrigir o problema de conexão com mysql" />
+    <option name="LAST_COMMIT_MESSAGE" value="#Fix: tentativa de corrigir o problema de conexão com mysql" />
   </component>
 </project>

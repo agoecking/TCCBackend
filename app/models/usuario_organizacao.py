@@ -3,7 +3,7 @@ from app.models.usuario import Usuario, TipoUsuario
 
 class UsuarioOrganizacao(Usuario):
     __mapper_args__ = {
-        'polymorphic_identity': TipoUsuario.ORGANIZACAO,  # ✅ Adicione isso
+        'polymorphic_identity': TipoUsuario.ORGANIZACAO,
     }
 
     def __init__(self, id: int, nome: str, cpf: str, email: str, senha: str, organizacao_id: int):

@@ -12,7 +12,6 @@ class TipoUsuario(str, enum.Enum):
 
 
 class Usuario(Base, ICrud):
-    """Classe abstrata que representa um usuário"""
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
