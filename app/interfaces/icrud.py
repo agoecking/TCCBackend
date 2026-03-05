@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class ICrud(ABC):
+class ICrud:
 
     @abstractmethod
     def cadastrar(self):
