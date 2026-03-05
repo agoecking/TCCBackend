@@ -4,35 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Fix: mudança no README">
-      <change afterPath="$PROJECT_DIR$/app/database.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/interfaces/__init__py.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/interfaces/icrud.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/endereco.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/usuario_cliente.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/usuario_organizacao.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/repositories/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/repositories/organizacao_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/repositories/usuario_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/services/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/services/autenticacao.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/services/transacao.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/compra.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/compra.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/evento.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/evento.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/ingresso.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/ingresso.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/evento_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/evento_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/transacao_service.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Feature: mudança no código para se adequar ao diagrama">
+      <change beforePath="$PROJECT_DIR$/app/interfaces/__init__py.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/interfaces/__init__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +124,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772398570917</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="#Feature: mudança no código para se adequar ao diagrama">
+      <option name="closed" value="true" />
+      <created>1772739454959</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1772739454959</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -159,6 +140,7 @@
     <MESSAGE value="first commit" />
     <MESSAGE value="#Feature: estrutura básica, requirements e README com instrução" />
     <MESSAGE value="#Fix: mudança no README" />
-    <option name="LAST_COMMIT_MESSAGE" value="#Fix: mudança no README" />
+    <MESSAGE value="#Feature: mudança no código para se adequar ao diagrama" />
+    <option name="LAST_COMMIT_MESSAGE" value="#Feature: mudança no código para se adequar ao diagrama" />
   </component>
 </project>
