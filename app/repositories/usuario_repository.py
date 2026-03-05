@@ -1,28 +1,28 @@
+from sqlalchemy.orm import Session
+from app.models.usuario_cliente import UsuarioCliente
+from app.models.endereco import Endereco
+
+
 class UsuarioRepository:
 
-    def __init__(self):
-        self.usuarios = []
-
-    def salvar(self, usuario):
-        self.usuarios.append(usuario)
+    @staticmethod
+    def salvar(usuario: UsuarioCliente, db_session: Session):
+        """Salva um novo usuário cliente no banco"""
+        db_session.add(usuario)
+        db_session.commit()
+        db_session.refresh(usuario)
         return usuario
 
-    def buscar(self, usuario_id):
-        for usuario in self.usuarios:
-            if usuario.id == usuario_id:
-                return usuario
-        return None
+    @staticmethod
+    def buscar_por_email(email: str, db_session: Session):
+        """Busca usuário por email"""
+        return db_session.query(UsuarioCliente).filter(
+            UsuarioCliente.email == email
+        ).first()
 
-    def alterar(self, usuario):
-        for i, u in enumerate(self.usuarios):
-            if u.id == usuario.id:
-                self.usuarios[i] = usuario
-                return usuario
-        return None
-
-    def excluir(self, usuario_id):
-        for i, u in enumerate(self.usuarios):
-            if u.id == usuario_id:
-                del self.usuarios[i]
-                return True
-        return False
+    @staticmethod
+    def buscar_por_cpf(cpf: str, db_session: Session):
+        """Busca usuário por CPF"""
+        return db_session.query(UsuarioCliente).filter(
+            UsuarioCliente.cpf == cpf
+        ).first()

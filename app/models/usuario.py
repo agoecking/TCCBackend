@@ -1,7 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from app.interfaces.icrud import ICrud
 from app.database import Base
 from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy.ext.declarative import declarative_base
 import enum
 
 
@@ -10,7 +11,8 @@ class TipoUsuario(str, enum.Enum):
     ORGANIZACAO = "organizacao"
 
 
-class Usuario(Base, ABC, ICrud):
+class Usuario(Base, ICrud):
+    """Classe abstrata que representa um usuário"""
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -25,8 +27,7 @@ class Usuario(Base, ABC, ICrud):
         'polymorphic_on': tipo_usuario
     }
 
-    def __init__(self, id: int, nome: str, cpf: str, email: str, senha: str, tipo_usuario: str):
-        self.id = id
+    def __init__(self, nome: str, cpf: str, email: str, senha: str, tipo_usuario: TipoUsuario):
         self.nome = nome
         self.cpf = cpf
         self.email = email
@@ -34,10 +35,10 @@ class Usuario(Base, ABC, ICrud):
         self.tipo_usuario = tipo_usuario
 
     def cadastrar(self):
-        raise NotImplementedError("cadastrar() não implementado")
+        pass
 
     def excluir(self):
-        raise NotImplementedError("excluir() não implementado")
+        pass
 
     def alterar(self):
-        raise NotImplementedError("alterar() não implementado")
+        pass
