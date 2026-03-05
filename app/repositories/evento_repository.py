@@ -1,18 +1,28 @@
-from app.models.evento import Evento
-from app.extensions import db
-
 class EventoRepository:
 
-    @staticmethod
-    def salvar(evento):
-        db.session.add(evento)
-        db.session.commit()
+    def __init__(self):
+        self.eventos = []
+
+    def salvar(self, evento):
+        self.eventos.append(evento)
         return evento
 
-    @staticmethod
-    def buscar_por_id(id_evento):
-        return Evento.query.get(id_evento)
+    def buscar(self, evento_id):
+        for evento in self.eventos:
+            if evento.id == evento_id:
+                return evento
+        return None
 
-    @staticmethod
-    def listar():
-        return Evento.query.all()
+    def alterar(self, evento):
+        for i, e in enumerate(self.eventos):
+            if e.id == evento.id:
+                self.eventos[i] = evento
+                return evento
+        return None
+
+    def excluir(self, evento_id):
+        for i, e in enumerate(self.eventos):
+            if e.id == evento_id:
+                del self.eventos[i]
+                return True
+        return False

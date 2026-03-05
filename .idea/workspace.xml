@@ -4,7 +4,36 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Feature: estrutura básica, requirements e README com instrução" />
+    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Fix: mudança no README">
+      <change afterPath="$PROJECT_DIR$/app/database.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/interfaces/__init__py.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/interfaces/icrud.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/endereco.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/usuario_cliente.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/usuario_organizacao.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/repositories/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/repositories/organizacao_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/repositories/usuario_repository.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/autenticacao.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/transacao.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/compra.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/compra.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/evento.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/evento.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/ingresso.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/ingresso.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/repositories/evento_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/evento_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/transacao_service.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,31 +43,32 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "agoecking"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;agoecking&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/agoecking/TCCBackend.git",
-    "accountId": "8ea892cf-40ce-434c-8df3-d43b64272ca8"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/agoecking/TCCBackend.git&quot;,
+    &quot;accountId&quot;: &quot;8ea892cf-40ce-434c-8df3-d43b64272ca8&quot;
   }
-}]]></component>
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="3ABr60q3isBfcq4HJAL06u3a8TR" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -47,19 +77,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "master",
-    "junie.onboarding.icon.badge.shown": "true",
-    "to.speed.mode.migration.done": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/app" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -99,13 +135,30 @@
       <option name="project" value="LOCAL" />
       <updated>1772398247277</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="#Feature: estrutura básica, requirements e README com instrução">
+      <option name="closed" value="true" />
+      <created>1772398354079</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772398354079</updated>
+    </task>
+    <task id="LOCAL-00005" summary="#Fix: mudança no README">
+      <option name="closed" value="true" />
+      <created>1772398570917</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1772398570917</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first coomit" />
     <MESSAGE value="first commit" />
     <MESSAGE value="#Feature: estrutura básica, requirements e README com instrução" />
-    <option name="LAST_COMMIT_MESSAGE" value="#Feature: estrutura básica, requirements e README com instrução" />
+    <MESSAGE value="#Fix: mudança no README" />
+    <option name="LAST_COMMIT_MESSAGE" value="#Fix: mudança no README" />
   </component>
 </project>

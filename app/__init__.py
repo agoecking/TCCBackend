@@ -1,14 +1,6 @@
-from flask import Flask
-from .extensions import db
-from config import Config
+"""
+TCCBackend - Backend para gerenciamento de eventos e ingressos
+"""
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-
-    db.init_app(app)
-
-    with app.app_context():
-        db.create_all()
-
-    return app
+__version__ = "1.0.0"
+__author__ = "teste"
