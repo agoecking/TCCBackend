@@ -10,6 +10,9 @@ def create_app(config_name='development'):
     from app.routes.usuario_routes import usuarios_bp
     app.register_blueprint(usuarios_bp)
 
+    from app.routes.evento_routes import eventos_bp
+    app.register_blueprint(eventos_bp)
+
     return app
 
 
