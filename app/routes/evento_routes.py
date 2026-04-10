@@ -29,7 +29,8 @@ def criar_evento():
         data = request.get_json()
         
         # O construtor do modelo espera id, nome, quantidade_ingressos, id_organizacao
-        # Como o ID real será autoincrementado pelo banco de dados, passamos None ou omitimos caso pudéssemos
+        # Id está None para que o bd gere o auto
+
         evento = Evento(
             id=None,
             nome=data['nome'],
