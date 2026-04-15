@@ -19,6 +19,9 @@ def create_app(config_name='development'):
     from app.routes.ingresso_routes import ingressos_bp
     app.register_blueprint(ingressos_bp)
 
+    from app.routes.organizacao_routes import organizacoes_bp
+    app.register_blueprint(organizacoes_bp)
+
     return app
 
 

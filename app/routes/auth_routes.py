@@ -4,6 +4,7 @@ from app.database import SessionLocal
 from app.models.usuario import Usuario, TipoUsuario
 from app.models.usuario_cliente import UsuarioCliente
 from app.models.endereco import Endereco
+from app.models.organizacao import Organizacao
 import jwt
 from datetime import datetime, timedelta
 import os
@@ -286,3 +287,68 @@ def token_required(f):
         return f(*args, **kwargs)
 
     return decorated
+
+# ======================== REGISTER ORGANIZACAO ========================
+@auth_bp.route("/register-organizacao", methods=["POST"])
+def register_organizacao():
+    """POST /auth/register-organizacao - Registrar organização + usuário organizacao"""
+    db = SessionLocal()
+
+    try:
+        data = request.get_json() or {}
+
+        # formato sugerido: { usuario: {...}, organizacao: {...} }
+        usuario_data = data.get("usuario") or {}
+        org_data = data.get("organizacao") or {}
+
+        required_usuario = ["nome", "cpf", "email", "senha"]
+        required_org = ["nome", "cnpj", "acesso_ethereum"]
+
+        if not all(k in usuario_data for k in required_usuario) or not all(k in org_data for k in required_org):
+            return jsonify({"erro": "Campos obrigatórios faltando"}), 400
+
+        # valida duplicidade email/cpf
+        if db.query(Usuario).filter(Usuario.email == usuario_data["email"]).first():
+            return jsonify({"erro": "Email já registrado"}), 409
+
+        if db.query(Usuario).filter(Usuario.cpf == usuario_data["cpf"]).first():
+            return jsonify({"erro": "CPF já registrado"}), 409
+
+        # valida duplicidade CNPJ
+        if db.query(Organizacao).filter(Organizacao.cnpj == org_data["cnpj"]).first():
+            return jsonify({"erro": "CNPJ já registrado"}), 409
+
+        # cria organizacao
+        org = Organizacao(
+            id=None,
+            nome=org_data["nome"],
+            cnpj=org_data["cnpj"],
+            acesso_ethereum=org_data["acesso_ethereum"],
+        )
+        db.add(org)
+        db.commit()
+        db.refresh(org)
+
+        # cria usuario organizacao (sem vínculo no banco, pois falta model/coluna para isso hoje)
+        usuario = Usuario(
+            nome=usuario_data["nome"],
+            cpf=usuario_data["cpf"],
+            email=usuario_data["email"],
+            senha=generate_password_hash(usuario_data["senha"]),
+            tipo_usuario=TipoUsuario.ORGANIZACAO
+        )
+        db.add(usuario)
+        db.commit()
+        db.refresh(usuario)
+
+        return jsonify({
+            "mensagem": "Organização registrada com sucesso",
+            "organizacao": {"id": org.id, "nome": org.nome, "cnpj": org.cnpj},
+            "usuario": {"id": usuario.id, "email": usuario.email, "tipo": usuario.tipo_usuario},
+        }), 201
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"erro": str(e)}), 400
+    finally:
+        db.close()
