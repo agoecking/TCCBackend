@@ -13,6 +13,12 @@ def create_app(config_name='development'):
     from app.routes.evento_routes import eventos_bp
     app.register_blueprint(eventos_bp)
 
+    from app.routes.auth_routes import auth_bp
+    app.register_blueprint(auth_bp)
+
+    from app.routes.ingresso_routes import ingressos_bp
+    app.register_blueprint(ingressos_bp)
+
     return app
 
 

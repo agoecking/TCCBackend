@@ -11,10 +11,9 @@ import os
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 # Chave secreta para JWT (deve estar no .env)
-SECRET_KEY = os.getenv('SECRET_KEY', 'sua-chave-secreta-super-segura')
+SECRET_KEY = "tccbackend-dev-local-secret-key-fixa"
 
-
-# ======================== REGISTER CLIENTE ========================
+# ======================== REGISTRAR CLIENTE ========================
 @auth_bp.route("/register-cliente", methods=["POST"])
 def register_cliente():
     """POST /auth/register-cliente - Registrar novo cliente"""
@@ -122,7 +121,7 @@ def login():
         db.close()
 
 
-# ======================== VALIDATE TOKEN ========================
+# ======================== VALIDAR TOKEN ========================
 @auth_bp.route("/validate-token", methods=["POST"])
 def validate_token():
     """POST /auth/validate-token - Validar token JWT"""
@@ -212,7 +211,7 @@ def logout():
     return jsonify({'mensagem': 'Logout realizado com sucesso'}), 200
 
 
-# ======================== CHANGE PASSWORD ========================
+# ======================== MUDAR SENHA ========================
 @auth_bp.route("/change-password", methods=["POST"])
 def change_password():
     """POST /auth/change-password - Alterar senha do usuário"""
