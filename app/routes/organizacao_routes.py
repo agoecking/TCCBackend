@@ -7,7 +7,40 @@ organizacoes_bp = Blueprint("organizacoes", __name__, url_prefix="/api/organizac
 
 @organizacoes_bp.route("", methods=["POST"])
 def criar_organizacao():
-    """POST /api/organizacoes - Criar organização"""
+    """
+    Criar organização
+    ---
+    tags:
+      - Organizações
+    summary: Criar organização
+    description: Cria uma organização (CNPJ deve ser único).
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [nome, cnpj, acesso_ethereum]
+          properties:
+            nome:
+              type: string
+              example: "Org Teste"
+            cnpj:
+              type: string
+              example: "12.345.678/0001-90"
+            acesso_ethereum:
+              type: string
+              example: "0xorg"
+    responses:
+      201:
+        description: Organização criada
+      400:
+        description: Erro (campos faltando ou falha ao salvar)
+      409:
+        description: CNPJ já registrado
+    """
     db = SessionLocal()
     try:
         data = request.get_json() or {}
@@ -48,7 +81,18 @@ def criar_organizacao():
 
 @organizacoes_bp.route("", methods=["GET"])
 def listar_organizacoes():
-    """GET /api/organizacoes - Listar organizações"""
+    """
+    Listar organizações
+    ---
+    tags:
+      - Organizações
+    summary: Listar organizações
+    responses:
+      200:
+        description: Lista de organizações
+      400:
+        description: Erro
+    """
     db = SessionLocal()
     try:
         orgs = db.query(Organizacao).all()
@@ -66,7 +110,26 @@ def listar_organizacoes():
 
 @organizacoes_bp.route("/<int:org_id>", methods=["GET"])
 def obter_organizacao(org_id):
-    """GET /api/organizacoes/{id} - Obter organização"""
+    """
+    Obter organização por ID
+    ---
+    tags:
+      - Organizações
+    summary: Obter organização
+    parameters:
+      - in: path
+        name: org_id
+        type: integer
+        required: true
+        description: ID da organização
+    responses:
+      200:
+        description: Organização encontrada
+      404:
+        description: Organização não encontrada
+      400:
+        description: Erro
+    """
     db = SessionLocal()
     try:
         org = db.query(Organizacao).filter(Organizacao.id == org_id).first()
@@ -87,7 +150,45 @@ def obter_organizacao(org_id):
 
 @organizacoes_bp.route("/<int:org_id>", methods=["PUT"])
 def atualizar_organizacao(org_id):
-    """PUT /api/organizacoes/{id} - Atualizar organização"""
+    """
+    Atualizar organização
+    ---
+    tags:
+      - Organizações
+    summary: Atualizar organização
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: org_id
+        type: integer
+        required: true
+        description: ID da organização
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+              example: "Org Atualizada"
+            cnpj:
+              type: string
+              example: "12.345.678/0001-90"
+            acesso_ethereum:
+              type: string
+              example: "0xorg"
+    responses:
+      200:
+        description: Organização atualizada
+      404:
+        description: Organização não encontrada
+      409:
+        description: CNPJ já registrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
     try:
         org = db.query(Organizacao).filter(Organizacao.id == org_id).first()
@@ -131,7 +232,29 @@ def atualizar_organizacao(org_id):
 
 @organizacoes_bp.route("/<int:org_id>", methods=["DELETE"])
 def deletar_organizacao(org_id):
-    """DELETE /api/organizacoes/{id} - Deletar organização"""
+    """
+    Deletar organização
+    ---
+    tags:
+      - Organizações
+    summary: Deletar organização
+    description: Remove uma organização. Se houver eventos associados, retorna 409.
+    parameters:
+      - in: path
+        name: org_id
+        type: integer
+        required: true
+        description: ID da organização
+    responses:
+      200:
+        description: Organização deletada
+      404:
+        description: Organização não encontrada
+      409:
+        description: Organização possui eventos e não pode ser removida
+      400:
+        description: Erro
+    """
     db = SessionLocal()
     try:
         org = db.query(Organizacao).filter(Organizacao.id == org_id).first()

@@ -14,7 +14,41 @@ ingressos_bp = Blueprint('ingressos', __name__, url_prefix='/api/ingressos')
 @ingressos_bp.route('/comprar', methods=['POST'])
 @token_required
 def comprar_ingressos():
-    """POST /api/ingressos/comprar - Cliente compra ingressos de um evento"""
+    """
+    Comprar ingressos (cliente logado)
+    ---
+    tags:
+      - Ingressos
+    summary: Comprar ingressos
+    description: Cliente compra ingressos de um evento. Requer JWT no header Authorization.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [id_evento, quantidade]
+          properties:
+            id_evento:
+              type: integer
+              example: 1
+            quantidade:
+              type: integer
+              example: 2
+    responses:
+      201:
+        description: Compra criada e ingressos gerados
+      400:
+        description: Erro de validação (campos faltando ou quantidade insuficiente)
+      401:
+        description: Token não fornecido / inválido
+      404:
+        description: Evento não encontrado
+    """
     db = SessionLocal()
 
     try:
@@ -79,7 +113,24 @@ def comprar_ingressos():
 @ingressos_bp.route('/meus-ingressos', methods=['GET'])
 @token_required
 def meus_ingressos():
-    """GET /api/ingressos/meus-ingressos - Listar ingressos do cliente logado"""
+    """
+    Listar ingressos do cliente logado
+    ---
+    tags:
+      - Ingressos
+    summary: Meus ingressos
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Lista de ingressos (agrupados por compra)
+      401:
+        description: Token não fornecido / inválido
+      404:
+        description: Nenhum ingresso encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -117,7 +168,26 @@ def meus_ingressos():
 # ======================== READ - LISTAR INGRESSOS DE UM EVENTO ========================
 @ingressos_bp.route('/evento/<int:evento_id>', methods=['GET'])
 def listar_ingressos_evento(evento_id):
-    """GET /api/ingressos/evento/{evento_id} - Listar todos os ingressos de um evento"""
+    """
+    Listar ingressos de um evento
+    ---
+    tags:
+      - Ingressos
+    summary: Listar ingressos do evento
+    parameters:
+      - in: path
+        name: evento_id
+        type: integer
+        required: true
+        description: ID do evento
+    responses:
+      200:
+        description: Informações do evento e lista de ingressos
+      404:
+        description: Evento não encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -153,7 +223,26 @@ def listar_ingressos_evento(evento_id):
 # ======================== READ - BUSCAR INGRESSO ESPECÍFICO ========================
 @ingressos_bp.route('/<int:ingresso_id>', methods=['GET'])
 def obter_ingresso(ingresso_id):
-    """GET /api/ingressos/{ingresso_id} - Obter detalhes de um ingresso"""
+    """
+    Obter detalhes de um ingresso
+    ---
+    tags:
+      - Ingressos
+    summary: Obter ingresso
+    parameters:
+      - in: path
+        name: ingresso_id
+        type: integer
+        required: true
+        description: ID do ingresso
+    responses:
+      200:
+        description: Detalhes do ingresso
+      404:
+        description: Ingresso não encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -179,7 +268,42 @@ def obter_ingresso(ingresso_id):
 @ingressos_bp.route('/transferir/<int:ingresso_id>', methods=['PUT'])
 @token_required
 def transferir_ingresso(ingresso_id):
-    """PUT /api/ingressos/transferir/{ingresso_id} - Transferir ingresso para outro cliente"""
+    """
+    Transferir ingresso para outro cliente
+    ---
+    tags:
+      - Ingressos
+    summary: Transferir ingresso
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: ingresso_id
+        type: integer
+        required: true
+        description: ID do ingresso
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [id_cliente_destino]
+          properties:
+            id_cliente_destino:
+              type: integer
+              example: 2
+    responses:
+      200:
+        description: Transferência realizada
+      400:
+        description: Erro
+      401:
+        description: Token não fornecido / inválido
+      404:
+        description: Ingresso ou cliente destino não encontrado
+    """
     db = SessionLocal()
 
     try:
@@ -222,7 +346,32 @@ def transferir_ingresso(ingresso_id):
 @ingressos_bp.route('/cancelar/<int:compra_id>', methods=['DELETE'])
 @token_required
 def cancelar_compra(compra_id):
-    """DELETE /api/ingressos/cancelar/{compra_id} - Cancelar uma compra de ingressos"""
+    """
+    Cancelar compra
+    ---
+    tags:
+      - Ingressos
+    summary: Cancelar compra
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: compra_id
+        type: integer
+        required: true
+        description: ID da compra
+    responses:
+      200:
+        description: Compra cancelada
+      401:
+        description: Token não fornecido / inválido
+      403:
+        description: Sem permissão (compra de outro cliente)
+      404:
+        description: Compra não encontrada
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -263,69 +412,103 @@ def cancelar_compra(compra_id):
 
 
 # ======================== READ - ESTATÍSTICAS DE VENDAS ========================
-@ingressos_bp.route('/evento/<int:evento_id>/estatisticas', methods=['GET'])
-def estatisticas_evento(evento_id):
-    """GET /api/ingressos/evento/{evento_id}/estatisticas - Estatísticas de vendas do evento"""
-    db = SessionLocal()
-
-    try:
-        evento = db.query(Evento).filter(Evento.id == evento_id).first()
-        if not evento:
-            return jsonify({'erro': 'Evento não encontrado'}), 404
-
-        total_vendas = db.query(Compra).filter(
-            Compra.id_evento == evento_id
-        ).with_entities(
-            db.func.sum(Compra.quantidade_ingressos),
-            db.func.count(Compra.id)
-        ).first()
-
-        quantidade_vendida = total_vendas[0] or 0
-        numero_compras = total_vendas[1] or 0
-
-        return jsonify({
-            'evento': evento.nome,
-            'total_ingressos': evento.quantidade_ingressos,
-            'vendidos': quantidade_vendida,
-            'disponivel': evento.quantidade_ingressos - quantidade_vendida,
-            'numero_compras': numero_compras,
-            'percentual_vendido': round((quantidade_vendida / evento.quantidade_ingressos * 100), 2)
-        }), 200
-
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 400
-    finally:
-        db.close()
+# @ingressos_bp.route('/evento/<int:evento_id>/estatisticas', methods=['GET'])
+# def estatisticas_evento(evento_id):
+#     """
+#     Estatísticas de vendas do evento
+#     ---
+#     tags:
+#       - Ingressos
+#     summary: Estatísticas do evento
+#     parameters:
+#       - in: path
+#         name: evento_id
+#         type: integer
+#         required: true
+#         description: ID do evento
+#     responses:
+#       200:
+#         description: Estatísticas do evento
+#       404:
+#         description: Evento não encontrado
+#       400:
+#         description: Erro
+#     """
+#     db = SessionLocal()
+#
+#     try:
+#         evento = db.query(Evento).filter(Evento.id == evento_id).first()
+#         if not evento:
+#             return jsonify({'erro': 'Evento não encontrado'}), 404
+#
+#         total_vendas = db.query(Compra).filter(
+#             Compra.id_evento == evento_id
+#         ).with_entities(
+#             db.func.sum(Compra.quantidade_ingressos),
+#             db.func.count(Compra.id)
+#         ).first()
+#
+#         quantidade_vendida = total_vendas[0] or 0
+#         numero_compras = total_vendas[1] or 0
+#
+#         return jsonify({
+#             'evento': evento.nome,
+#             'total_ingressos': evento.quantidade_ingressos,
+#             'vendidos': quantidade_vendida,
+#             'disponivel': evento.quantidade_ingressos - quantidade_vendida,
+#             'numero_compras': numero_compras,
+#             'percentual_vendido': round((quantidade_vendida / evento.quantidade_ingressos * 100), 2)
+#         }), 200
+#
+#     except Exception as e:
+#         return jsonify({'erro': str(e)}), 400
+#     finally:
+#         db.close()
 
 
 # ======================== READ - HISTÓRICO DE COMPRAS ========================
-@ingressos_bp.route('/historico', methods=['GET'])
-@token_required
-def historico_compras():
-    """GET /api/ingressos/historico - Ver histórico completo de compras do cliente"""
-    db = SessionLocal()
-
-    try:
-        id_cliente = request.usuario_id
-
-        compras = db.query(Compra).filter(Compra.id_cliente == id_cliente).all()
-
-        resultado = []
-        for compra in compras:
-            resultado.append({
-                'id_compra': compra.id,
-                'evento': compra.evento.nome,
-                'quantidade': compra.quantidade_ingressos,
-                'data': compra.id  # adicionar timestamp real se tiver
-            })
-
-        return jsonify({
-            'cliente_id': id_cliente,
-            'compras': resultado,
-            'total_compras': len(resultado)
-        }), 200
-
-    except Exception as e:
-        return jsonify({'erro': str(e)}), 400
-    finally:
-        db.close()
+# @ingressos_bp.route('/historico', methods=['GET'])
+# @token_required
+# def historico_compras():
+#     """
+#     Histórico de compras do cliente logado
+#     ---
+#     tags:
+#       - Ingressos
+#     summary: Histórico de compras
+#     security:
+#       - BearerAuth: []
+#     responses:
+#       200:
+#         description: Histórico de compras
+#       401:
+#         description: Token não fornecido / inválido
+#       400:
+#         description: Erro
+#     """
+#     db = SessionLocal()
+#
+#     try:
+#         id_cliente = request.usuario_id
+#
+#         compras = db.query(Compra).filter(Compra.id_cliente == id_cliente).all()
+#
+#         resultado = []
+#         for compra in compras:
+#             resultado.append({
+#                 'id_compra': compra.id,
+#                 'evento': compra.evento.nome,
+#                 'quantidade': compra.quantidade_ingressos,
+#                 'data': compra.id  # adicionar timestamp real se tiver
+#             })
+#
+#         return jsonify({
+#             'cliente_id': id_cliente,
+#             'compras': resultado,
+#             'total_compras': len(resultado)
+#         }), 200
+#
+#     except Exception as e:
+#         return jsonify({'erro': str(e)}), 400
+#     finally:
+#         db.close()

@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Feature: rotas de ingresso">
-      <change afterPath="$PROJECT_DIR$/app/routes/organizacao_routes.py" afterDir="false" />
+    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Feature: teste de rotas utilizando token para autenticacao #Fix: registro de rotas em main">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/auth_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/evento_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/evento_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/ingresso_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/ingresso_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/organizacao_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/organizacao_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/usuario_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/usuario_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,12 +36,12 @@
     &quot;assignee&quot;: &quot;agoecking&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/agoecking/TCCBackend.git&quot;,
-    &quot;accountId&quot;: &quot;8ea892cf-40ce-434c-8df3-d43b64272ca8&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/agoecking/TCCBackend.git",
+    "accountId": "ffc915cf-1b7e-425a-b977-435452efab4e"
   }
-}</component>
+}]]></component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -76,7 +79,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-f2b7a9f6281b-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.142" />
+        <option value="bundled-python-sdk-ca5e2b39c7df-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.308" />
       </set>
     </attachedChunks>
   </component>
@@ -192,7 +195,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776278748887</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="#Feature: teste de rotas utilizando token para autenticacao #Fix: registro de rotas em main">
+      <option name="closed" value="true" />
+      <created>1776285874812</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1776285874812</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -206,6 +217,7 @@
     <MESSAGE value="#Fix: tentativa de corrigir o problema de conexão com mysql" />
     <MESSAGE value="#Feature: Gravar no mysql usuario_cliente" />
     <MESSAGE value="#Feature: rotas de ingresso" />
-    <option name="LAST_COMMIT_MESSAGE" value="#Feature: rotas de ingresso" />
+    <MESSAGE value="#Feature: teste de rotas utilizando token para autenticacao #Fix: registro de rotas em main" />
+    <option name="LAST_COMMIT_MESSAGE" value="#Feature: teste de rotas utilizando token para autenticacao #Fix: registro de rotas em main" />
   </component>
 </project>

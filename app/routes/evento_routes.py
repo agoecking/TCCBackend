@@ -11,7 +11,18 @@ eventos_bp = Blueprint('eventos', __name__, url_prefix='/api/eventos')
 
 @eventos_bp.route('', methods=['GET'])
 def listar_eventos():
-    """GET /api/eventos - Listar eventos"""
+    """
+    Listar eventos
+    ---
+    tags:
+      - Eventos
+    summary: Listar eventos
+    responses:
+      200:
+        description: Lista de eventos
+      400:
+        description: Erro
+    """
     db = SessionLocal()
     try:
         eventos = db.query(Evento).all()
@@ -30,7 +41,44 @@ def listar_eventos():
 @eventos_bp.route('', methods=['POST'])
 @token_required
 def criar_evento():
-    """POST /api/eventos - Criar evento (somente organização)"""
+    """
+    Criar evento (somente ORGANIZAÇÃO)
+    ---
+    tags:
+      - Eventos
+    summary: Criar evento
+    description: Requer JWT no header Authorization e usuário com tipo ORGANIZACAO.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [nome, quantidade_ingressos, id_organizacao]
+          properties:
+            nome:
+              type: string
+              example: "Evento 1"
+            quantidade_ingressos:
+              type: integer
+              example: 100
+            id_organizacao:
+              type: integer
+              example: 1
+    responses:
+      201:
+        description: Evento criado
+      400:
+        description: Erro (campos faltando ou falha ao salvar)
+      401:
+        description: Token não fornecido / inválido
+      403:
+        description: Apenas ORGANIZAÇÃO pode criar evento
+    """
     # NOVO: checagem de tipo
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode criar evento'}), 403
@@ -70,7 +118,26 @@ def criar_evento():
 
 @eventos_bp.route('/<int:id>', methods=['GET'])
 def buscar_evento(id):
-    """GET /api/eventos/<id> - Buscar evento"""
+    """
+    Buscar evento por ID
+    ---
+    tags:
+      - Eventos
+    summary: Buscar evento
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: ID do evento
+    responses:
+      200:
+        description: Evento encontrado
+      404:
+        description: Evento não encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
     try:
         evento = db.query(Evento).filter(Evento.id == id).first()
@@ -92,7 +159,50 @@ def buscar_evento(id):
 @eventos_bp.route('/<int:id>', methods=['PUT'])
 @token_required
 def atualizar_evento(id):
-    """PUT /api/eventos/<id> - Atualizar evento (somente organização)"""
+    """
+    Atualizar evento (somente ORGANIZAÇÃO)
+    ---
+    tags:
+      - Eventos
+    summary: Atualizar evento
+    description: Requer JWT no header Authorization e usuário com tipo ORGANIZACAO.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: ID do evento
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+              example: "Evento Atualizado"
+            quantidade_ingressos:
+              type: integer
+              example: 120
+            id_organizacao:
+              type: integer
+              example: 1
+    responses:
+      200:
+        description: Evento atualizado
+      401:
+        description: Token não fornecido / inválido
+      403:
+        description: Apenas ORGANIZAÇÃO pode atualizar evento
+      404:
+        description: Evento não encontrado
+      400:
+        description: Erro
+    """
     # NOVO: checagem de tipo
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode atualizar evento'}), 403
@@ -131,7 +241,33 @@ def atualizar_evento(id):
 @eventos_bp.route('/<int:id>', methods=['DELETE'])
 @token_required
 def deletar_evento(id):
-    """DELETE /api/eventos/<id> - Deletar evento (somente organização)"""
+    """
+    Deletar evento (somente ORGANIZAÇÃO)
+    ---
+    tags:
+      - Eventos
+    summary: Deletar evento
+    description: Requer JWT no header Authorization e usuário com tipo ORGANIZACAO.
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: ID do evento
+    responses:
+      200:
+        description: Evento deletado
+      401:
+        description: Token não fornecido / inválido
+      403:
+        description: Apenas ORGANIZAÇÃO pode deletar evento
+      404:
+        description: Evento não encontrado
+      400:
+        description: Erro
+    """
     # NOVO: checagem de tipo
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode deletar evento'}), 403

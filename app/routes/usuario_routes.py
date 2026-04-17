@@ -5,9 +5,74 @@ from app.models.endereco import Endereco
 
 usuarios_bp = Blueprint('usuarios', __name__, url_prefix='/api/usuarios')
 
-#CREATE
+# CREATE
 @usuarios_bp.route('/cliente', methods=['POST'])
 def cadastrar_cliente():
+    """
+    Cadastrar cliente (sem hash de senha)
+    ---
+    tags:
+      - Usuários
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - nome
+            - cpf
+            - email
+            - senha
+            - telefone
+            - acesso_ethereum
+            - endereco
+          properties:
+            nome:
+              type: string
+              example: "Cliente 1"
+            cpf:
+              type: string
+              example: "12345678900"
+            email:
+              type: string
+              example: "cliente1@email.com"
+            senha:
+              type: string
+              example: "123"
+            telefone:
+              type: string
+              example: "11999999999"
+            acesso_ethereum:
+              type: string
+              example: "0xabc"
+            endereco:
+              type: object
+              required: [rua, numero, cidade, estado, cep]
+              properties:
+                rua:
+                  type: string
+                  example: "Rua A"
+                numero:
+                  type: integer
+                  example: 10
+                cidade:
+                  type: string
+                  example: "SP"
+                estado:
+                  type: string
+                  example: "SP"
+                cep:
+                  type: string
+                  example: "01001000"
+    responses:
+      201:
+        description: Cliente criado
+      400:
+        description: Erro (campos faltando ou falha ao salvar)
+    """
     db = SessionLocal()
 
     try:
@@ -55,10 +120,22 @@ def cadastrar_cliente():
     finally:
         db.close()
 
-#READ (ALL)
+# READ (ALL)
 @usuarios_bp.route('/clientes', methods=['GET'])
 def listar_clientes():
-    """GET /api/usuarios/clientes - Listar todos os clientes"""
+    """
+    Listar todos os clientes
+    ---
+    tags:
+      - Usuários
+    responses:
+      200:
+        description: Lista de clientes
+      404:
+        description: Nenhum cliente encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -93,10 +170,28 @@ def listar_clientes():
         db.close()
 
 
-#READ (ID)
+# READ (ID)
 @usuarios_bp.route('/cliente/<int:cliente_id>', methods=['GET'])
 def obter_cliente(cliente_id):
-    """GET /api/usuarios/cliente/{id} - Obter cliente específico"""
+    """
+    Obter cliente específico por ID
+    ---
+    tags:
+      - Usuários
+    parameters:
+      - in: path
+        name: cliente_id
+        type: integer
+        required: true
+        description: ID do cliente
+    responses:
+      200:
+        description: Cliente encontrado
+      404:
+        description: Cliente não encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -126,10 +221,59 @@ def obter_cliente(cliente_id):
     finally:
         db.close()
 
-#UPDATE
+# UPDATE
 @usuarios_bp.route('/cliente/<int:cliente_id>', methods=['PUT'])
 def atualizar_cliente(cliente_id):
-    """PUT /api/usuarios/cliente/{id} - Atualizar cliente"""
+    """
+    Atualizar cliente
+    ---
+    tags:
+      - Usuários
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: cliente_id
+        type: integer
+        required: true
+        description: ID do cliente
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+            email:
+              type: string
+            senha:
+              type: string
+            telefone:
+              type: string
+            acesso_ethereum:
+              type: string
+            endereco:
+              type: object
+              properties:
+                rua:
+                  type: string
+                numero:
+                  type: integer
+                cidade:
+                  type: string
+                estado:
+                  type: string
+                cep:
+                  type: string
+    responses:
+      200:
+        description: Cliente atualizado
+      404:
+        description: Cliente não encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
@@ -182,10 +326,28 @@ def atualizar_cliente(cliente_id):
         db.close()
 
 
-#DELETE
+# DELETE
 @usuarios_bp.route('/cliente/<int:cliente_id>', methods=['DELETE'])
 def deletar_cliente(cliente_id):
-    """DELETE /api/usuarios/cliente/{id} - Deletar cliente"""
+    """
+    Deletar cliente
+    ---
+    tags:
+      - Usuários
+    parameters:
+      - in: path
+        name: cliente_id
+        type: integer
+        required: true
+        description: ID do cliente
+    responses:
+      200:
+        description: Cliente deletado
+      404:
+        description: Cliente não encontrado
+      400:
+        description: Erro
+    """
     db = SessionLocal()
 
     try:
