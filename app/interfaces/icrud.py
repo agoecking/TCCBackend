@@ -1,16 +1,24 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import Any
 
-
-class ICrud:
+class ICrud(ABC):
+    """
+    Contrato CRUD para *repositories*.
+    Regras:
+    - Não comita/rollback.
+    - Não faz regra de negócio (isso é service).
+    - Não retorna JSON.
+    """
 
     @abstractmethod
-    def cadastrar(self):
-        pass
+    def create(self, entity: Any) -> Any: ...
 
     @abstractmethod
-    def excluir(self):
-        pass
+    def get_by_id(self, entity_id: int) -> Any | None: ...
 
     @abstractmethod
-    def alterar(self):
-        pass
+    def update(self, entity: Any) -> Any: ...
+
+    @abstractmethod
+    def delete(self, entity: Any) -> None: ...

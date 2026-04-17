@@ -1,28 +1,17 @@
+from __future__ import annotations
 from sqlalchemy.orm import Session
 from app.models.usuario_cliente import UsuarioCliente
-from app.models.endereco import Endereco
+from app.repositories.crud_repository import CrudRepository
 
+class UsuarioClienteRepository(CrudRepository):
+    def __init__(self, db: Session):
+        super().__init__(db=db, model=UsuarioCliente)
 
-class UsuarioRepository:
+    def list_all(self) -> list[UsuarioCliente]:
+        return self.db.query(UsuarioCliente).all()
 
-    @staticmethod
-    def salvar(usuario: UsuarioCliente, db_session: Session):
-        """Salva um novo usuário cliente no banco"""
-        db_session.add(usuario)
-        db_session.commit()
-        db_session.refresh(usuario)
-        return usuario
+    def get_by_email(self, email: str) -> UsuarioCliente | None:
+        return self.db.query(UsuarioCliente).filter(UsuarioCliente.email == email).first()
 
-    @staticmethod
-    def buscar_por_email(email: str, db_session: Session):
-        """Busca usuário por email"""
-        return db_session.query(UsuarioCliente).filter(
-            UsuarioCliente.email == email
-        ).first()
-
-    @staticmethod
-    def buscar_por_cpf(cpf: str, db_session: Session):
-        """Busca usuário por CPF"""
-        return db_session.query(UsuarioCliente).filter(
-            UsuarioCliente.cpf == cpf
-        ).first()
+    def get_by_cpf(self, cpf: str) -> UsuarioCliente | None:
+        return self.db.query(UsuarioCliente).filter(UsuarioCliente.cpf == cpf).first()

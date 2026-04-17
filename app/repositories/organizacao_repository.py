@@ -1,28 +1,14 @@
-class OrganizacaoRepository:
+from __future__ import annotations
+from sqlalchemy.orm import Session
+from app.models.organizacao import Organizacao
+from app.repositories.crud_repository import CrudRepository
 
-    def __init__(self):
-        self.organizacoes = []
+class OrganizacaoRepository(CrudRepository):
+    def __init__(self, db: Session):
+        super().__init__(db=db, model=Organizacao)
 
-    def salvar(self, organizacao):
-        self.organizacoes.append(organizacao)
-        return organizacao
+    def list_all(self) -> list[Organizacao]:
+        return self.db.query(Organizacao).all()
 
-    def buscar(self, organizacao_id):
-        for org in self.organizacoes:
-            if org.id == organizacao_id:
-                return org
-        return None
-
-    def alterar(self, organizacao):
-        for i, org in enumerate(self.organizacoes):
-            if org.id == organizacao.id:
-                self.organizacoes[i] = organizacao
-                return organizacao
-        return None
-
-    def excluir(self, organizacao_id):
-        for i, org in enumerate(self.organizacoes):
-            if org.id == organizacao_id:
-                del self.organizacoes[i]
-                return True
-        return False
+    def get_by_cnpj(self, cnpj: str) -> Organizacao | None:
+        return self.db.query(Organizacao).filter(Organizacao.cnpj == cnpj).first()

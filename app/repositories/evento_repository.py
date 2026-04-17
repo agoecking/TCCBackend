@@ -1,28 +1,14 @@
-class EventoRepository:
+from __future__ import annotations
+from sqlalchemy.orm import Session
+from app.models.evento import Evento
+from app.repositories.crud_repository import CrudRepository
 
-    def __init__(self):
-        self.eventos = []
+class EventoRepository(CrudRepository):
+    def __init__(self, db: Session):
+        super().__init__(db=db, model=Evento)
 
-    def salvar(self, evento):
-        self.eventos.append(evento)
-        return evento
+    def list_all(self) -> list[Evento]:
+        return self.db.query(Evento).all()
 
-    def buscar(self, evento_id):
-        for evento in self.eventos:
-            if evento.id == evento_id:
-                return evento
-        return None
-
-    def alterar(self, evento):
-        for i, e in enumerate(self.eventos):
-            if e.id == evento.id:
-                self.eventos[i] = evento
-                return evento
-        return None
-
-    def excluir(self, evento_id):
-        for i, e in enumerate(self.eventos):
-            if e.id == evento_id:
-                del self.eventos[i]
-                return True
-        return False
+    def list_by_organizacao(self, id_organizacao: int) -> list[Evento]:
+        return self.db.query(Evento).filter(Evento.id_organizacao == id_organizacao).all()

@@ -1,10 +1,9 @@
 from app.database import Base
-from app.interfaces.icrud import ICrud
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
 
-class Ingresso(Base, ICrud):
+class Ingresso(Base):
     __tablename__ = "ingressos"
 
     id = Column(Integer, primary_key=True, index=True)

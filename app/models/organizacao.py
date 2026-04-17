@@ -1,10 +1,9 @@
 from app.database import Base
-from app.interfaces.icrud import ICrud
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 
-class Organizacao(Base, ICrud):
+class Organizacao(Base):
     __tablename__ = "organizacoes"
 
     id = Column(Integer, primary_key=True, index=True)

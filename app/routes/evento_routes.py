@@ -2,9 +2,10 @@ from flask import Blueprint, request, jsonify
 from app.database import SessionLocal
 from app.models.evento import Evento
 
-# NOVO: proteger rotas de escrita
 from app.routes.auth_routes import token_required
 from app.models.usuario import TipoUsuario
+
+from app.repositories.evento_repository import EventoRepository
 
 eventos_bp = Blueprint('eventos', __name__, url_prefix='/api/eventos')
 
@@ -25,13 +26,16 @@ def listar_eventos():
     """
     db = SessionLocal()
     try:
-        eventos = db.query(Evento).all()
+        repo = EventoRepository(db)
+        eventos = repo.list_all()
+
         return jsonify([{
             'id': e.id,
             'nome': e.nome,
             'quantidade_ingressos': e.quantidade_ingressos,
             'id_organizacao': e.id_organizacao
         } for e in eventos]), 200
+
     except Exception as e:
         return jsonify({'erro': str(e)}), 400
     finally:
@@ -79,7 +83,6 @@ def criar_evento():
       403:
         description: Apenas ORGANIZAÇÃO pode criar evento
     """
-    # NOVO: checagem de tipo
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode criar evento'}), 403
 
@@ -87,10 +90,11 @@ def criar_evento():
     try:
         data = request.get_json() or {}
 
-        # validação simples
         required = ['nome', 'quantidade_ingressos', 'id_organizacao']
         if not all(k in data for k in required):
             return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
+
+        repo = EventoRepository(db)
 
         evento = Evento(
             id=None,
@@ -99,7 +103,8 @@ def criar_evento():
             id_organizacao=data['id_organizacao']
         )
 
-        db.add(evento)
+        repo.create(evento)  # em vez de db.add(evento)
+
         db.commit()
         db.refresh(evento)
 
@@ -109,6 +114,7 @@ def criar_evento():
             'quantidade_ingressos': evento.quantidade_ingressos,
             'id_organizacao': evento.id_organizacao
         }), 201
+
     except Exception as e:
         db.rollback()
         return jsonify({'erro': str(e)}), 400
@@ -140,7 +146,9 @@ def buscar_evento(id):
     """
     db = SessionLocal()
     try:
-        evento = db.query(Evento).filter(Evento.id == id).first()
+        repo = EventoRepository(db)
+        evento = repo.get_by_id(id)  # em vez de db.query(...)
+
         if not evento:
             return jsonify({'erro': 'Evento não encontrado'}), 404
 
@@ -150,6 +158,7 @@ def buscar_evento(id):
             'quantidade_ingressos': evento.quantidade_ingressos,
             'id_organizacao': evento.id_organizacao
         }), 200
+
     except Exception as e:
         return jsonify({'erro': str(e)}), 400
     finally:
@@ -203,13 +212,14 @@ def atualizar_evento(id):
       400:
         description: Erro
     """
-    # NOVO: checagem de tipo
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode atualizar evento'}), 403
 
     db = SessionLocal()
     try:
-        evento = db.query(Evento).filter(Evento.id == id).first()
+        repo = EventoRepository(db)
+        evento = repo.get_by_id(id)
+
         if not evento:
             return jsonify({'erro': 'Evento não encontrado'}), 404
 
@@ -222,6 +232,9 @@ def atualizar_evento(id):
         if 'id_organizacao' in data:
             evento.id_organizacao = data['id_organizacao']
 
+        # opcional: repo.update(evento) (só se você tiver objeto detached)
+        # repo.update(evento)
+
         db.commit()
         db.refresh(evento)
 
@@ -231,6 +244,7 @@ def atualizar_evento(id):
             'quantidade_ingressos': evento.quantidade_ingressos,
             'id_organizacao': evento.id_organizacao
         }), 200
+
     except Exception as e:
         db.rollback()
         return jsonify({'erro': str(e)}), 400
@@ -268,20 +282,22 @@ def deletar_evento(id):
       400:
         description: Erro
     """
-    # NOVO: checagem de tipo
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode deletar evento'}), 403
 
     db = SessionLocal()
     try:
-        evento = db.query(Evento).filter(Evento.id == id).first()
+        repo = EventoRepository(db)
+        evento = repo.get_by_id(id)
+
         if not evento:
             return jsonify({'erro': 'Evento não encontrado'}), 404
 
-        db.delete(evento)
+        repo.delete(evento)  # em vez de db.delete(evento)
         db.commit()
 
         return jsonify({'mensagem': 'Evento deletado com sucesso'}), 200
+
     except Exception as e:
         db.rollback()
         return jsonify({'erro': str(e)}), 400

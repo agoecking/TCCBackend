@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from app.interfaces.icrud import ICrud
 from app.database import Base
 from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.ext.declarative import declarative_base
@@ -11,7 +10,7 @@ class TipoUsuario(str, enum.Enum):
     ORGANIZACAO = "organizacao"
 
 
-class Usuario(Base, ICrud):
+class Usuario(Base):
     __tablename__ = "usuarios"
 
     id = Column(Integer, primary_key=True, index=True)
