@@ -307,40 +307,33 @@ def transferir_ingresso(ingresso_id):
     db = SessionLocal()
 
     try:
-        data = request.get_json()
-        id_cliente_origem = request.usuario_id
+   
+      from app.repositories.evento_repository import EventoRepository
+      from app.repositories.compra_repository import CompraRepository
+      from app.repositories.ingresso_repository import IngressoRepository
+      from app.services.ingresso_service import IngressoService
+      
+      evento_repo = EventoRepository(db)
+      compra_repo = CompraRepository(db)
+      ingressos_repo = IngressoRepository(db)
+      ingressos_service = IngressoService(db, evento_repo, compra_repo, ingressos_repo)
 
-        if not data.get('id_cliente_destino'):
-            return jsonify({'erro': 'id_cliente_destino é obrigatório'}), 400
+      data = request.get_json()
+      nova_propriedade = data['id_cliente_destino']
+      meu_id = request.usuario_id
 
-        # Buscar ingresso
-        ingresso = db.query(Ingresso).filter(Ingresso.id == ingresso_id).first()
-        if not ingresso:
-            return jsonify({'erro': 'Ingresso não encontrado'}), 404
+      ingresso = ingressos_service.transferir_ingresso(
+        id_ingresso=ingresso_id,
+        id_dono_atual=meu_id,
+        id_novo_dono=nova_propriedade
+      )
 
-        # Verificar se cliente destino existe
-        cliente_destino = db.query(UsuarioCliente).filter(
-            UsuarioCliente.id == data['id_cliente_destino']
-        ).first()
-        if not cliente_destino:
-            return jsonify({'erro': 'Cliente destino não encontrado'}), 404
-
-        # Aqui você poderia implementar lógica de blockchain
-        # ingresso.smart_contract()
-
-        return jsonify({
-            'mensagem': 'Ingresso transferido com sucesso',
-            'ingresso_id': ingresso.id,
-            'cliente_origem': id_cliente_origem,
-            'cliente_destino': data['id_cliente_destino']
-        }), 200
-
+      return jsonify({"mensagem": "Ingresso transferido com sucesso!", "novo_dono": ingresso.id_cliente}), 200
     except Exception as e:
-        db.rollback()
-        return jsonify({'erro': str(e)}), 400
+      return jsonify({'erro': str(e)}), 400
     finally:
-        db.close()
-
+      db.close()
+      
 
 # ======================== DELETE - CANCELAR COMPRA ========================
 @ingressos_bp.route('/cancelar/<int:compra_id>', methods=['DELETE'])
