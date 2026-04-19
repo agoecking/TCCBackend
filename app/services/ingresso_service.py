@@ -4,6 +4,7 @@ from app.services.errors import ValidationError, NotFoundError
 from app.repositories.evento_repository import EventoRepository
 from app.repositories.compra_repository import CompraRepository
 from app.repositories.ingresso_repository import IngressoRepository
+from app.models.ingresso import Ingresso
 
 
 class IngressoService:
@@ -47,10 +48,15 @@ class IngressoService:
             quantidade=quantidade,
         )
 
-        ingressos = self.ingresso_repo.create_many_for_evento(
-            evento_id=evento.id,
-            quantidade=quantidade,
-        )
+        ingressos = []
+        for i in range(quantidade):
+            # IMPORTANTE: Agora ele pega quem tá comprando
+            ingresso = self.ingresso_repo.create(
+                id_evento=evento.id,
+                id_cliente=id_cliente,
+                status="disponivel"
+            )
+            ingressos.append(ingresso)
 
         # 1 commit no final (atômico)
         self.db.commit()
@@ -66,3 +72,32 @@ class IngressoService:
             "quantidade": quantidade,
             "ingressos_ids": [i.id for i in ingressos],
         }
+
+    def transferir_ingresso(self, id_ingresso: int, id_dono_atual: int, id_novo_dono: int):
+        """Altera a propriedade de um ingresso"""
+        ingresso = self.db.query(Ingresso).filter(Ingresso.id == id_ingresso).first()
+        if not ingresso:
+            raise NotFoundError("Ingresso não encontrado")
+            
+        if ingresso.id_cliente != id_dono_atual:
+            raise ValidationError("Você não é dono deste ingresso para poder transferir.")
+            
+        if ingresso.status == "a_venda":
+            raise ValidationError("Ingressos apontados como a venda não podem ser transferidos diretamente.")
+            
+        ingresso.id_cliente = id_novo_dono
+        self.db.commit()
+        return ingresso
+
+    def anunciar_revenda(self, id_ingresso: int, id_dono: int):
+        """Muda o status do ingresso que você é dono para a_venda no mercado"""
+        ingresso = self.db.query(Ingresso).filter(Ingresso.id == id_ingresso).first()
+        if not ingresso or ingresso.id_cliente != id_dono:
+            raise ValidationError("Só o dono real pode anunciar a revenda deste bilhete.")
+            
+        if ingresso.status == "utilizado":
+            raise ValidationError("Ingresso já utilizado!")
+            
+        ingresso.status = "a_venda"
+        self.db.commit()
+        return ingresso
