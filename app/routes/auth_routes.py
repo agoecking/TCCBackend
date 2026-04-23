@@ -1,5 +1,11 @@
+# ===== MUDANÇA 1: Imports (linhas 1-15) =====
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
+from app.services.cryptography import (
+    hash_password_argon2,
+    verify_password_argon2,
+    encrypt_data_aes,
+    decrypt_data_aes
+)
 from app.database import SessionLocal
 from app.models.usuario import Usuario, TipoUsuario
 from app.models.usuario_cliente import UsuarioCliente
@@ -12,7 +18,11 @@ import os
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 # Chave secreta para JWT (deve estar no .env)
-SECRET_KEY = "tccbackend-dev-local-secret-key-fixa"
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "tccbackend-dev-local-secret-key-fixa")
+AES_ENCRYPTION_KEY = os.getenv("AES_ENCRYPTION_KEY")
+
+if not AES_ENCRYPTION_KEY:
+    raise ValueError("AES_ENCRYPTION_KEY deve estar definida no .env")
 
 # ======================== REGISTRAR CLIENTE ========================
 @auth_bp.route("/register-cliente", methods=["POST"])
@@ -113,7 +123,7 @@ def register_cliente():
             nome=data['nome'],
             cpf=data['cpf'],
             email=data['email'],
-            senha=generate_password_hash(data['senha']),
+            senha=hash_password_argon2(data['senha']),
             telefone=data['telefone'],
             acesso_ethereum=data['acesso_ethereum'],
             endereco=endereco
@@ -181,7 +191,7 @@ def login():
         # Buscar usuário pelo email
         usuario = db.query(Usuario).filter(Usuario.email == data['email']).first()
 
-        if not usuario or not check_password_hash(usuario.senha, data['senha']):
+        if not usuario or not verify_password_argon2(usuario.senha, data['senha']):
             return jsonify({'erro': 'Email ou senha inválidos'}), 401
 
         # Gerar JWT token
@@ -421,11 +431,11 @@ def change_password():
             return jsonify({'erro': 'Usuário não encontrado'}), 404
 
         # Verificar senha atual
-        if not check_password_hash(usuario.senha, data['senha_atual']):
+        if not verify_password_argon2(usuario.senha, data['senha_atual']):
             return jsonify({'erro': 'Senha atual inválida'}), 401
 
         # Atualizar para nova senha
-        usuario.senha = generate_password_hash(data['nova_senha'])
+        usuario.senha = hash_password_argon2(data['nova_senha'])
         db.commit()
 
         return jsonify({'mensagem': 'Senha alterada com sucesso'}), 200
@@ -569,7 +579,7 @@ def register_organizacao():
             nome=usuario_data["nome"],
             cpf=usuario_data["cpf"],
             email=usuario_data["email"],
-            senha=generate_password_hash(usuario_data["senha"]),
+            senha=hash_password_argon2(usuario_data["senha"]),
             tipo_usuario=TipoUsuario.ORGANIZACAO
         )
         db.add(usuario)

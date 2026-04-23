@@ -1,27 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
-  </component>
   <component name="ChangeListManager">
-    <list default="true" id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="#Feature: documentação swagger">
-      <change afterPath="$PROJECT_DIR$/app/repositories/base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/repositories/compra_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/repositories/crud_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/repositories/ingresso_repository.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/services/errors.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/services/ingresso_service.py" afterDir="false" />
+    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="#Feature: repository e services criado, ainda não 100% implementados">
+      <change afterPath="$PROJECT_DIR$/app/services/cryptography.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/interfaces/icrud.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/interfaces/icrud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/evento.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/evento.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/ingresso.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/ingresso.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/usuario.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/evento_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/evento_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/organizacao_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/organizacao_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/usuario_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/usuario_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/evento_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/evento_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/auth_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/autenticacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/autenticacao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +16,6 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Dockerfile" />
         <option value="Python Script" />
       </list>
     </option>
@@ -39,26 +23,6 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;agoecking&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/agoecking/TCCBackend.git",
-    "accountId": "ffc915cf-1b7e-425a-b977-435452efab4e"
-  }
-}]]></component>
-  <component name="McpProjectServerCommands">
-    <commands />
-    <urls />
-  </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 6
-}</component>
-  <component name="ProjectId" id="3ABr60q3isBfcq4HJAL06u3a8TR" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -66,176 +30,12 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "git-widget-placeholder": "master"
   }
-}</component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/app" />
-    </key>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-python-sdk-ca5e2b39c7df-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.308" />
-      </set>
-    </attachedChunks>
-  </component>
+}]]></component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="5d269484-3302-4e13-a03f-9e77f66f4954" name="Changes" comment="" />
-      <created>1772076625655</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1772076625655</updated>
-    </task>
-    <task id="LOCAL-00001" summary="first coomit">
-      <option name="closed" value="true" />
-      <created>1772079643475</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1772079643475</updated>
-    </task>
-    <task id="LOCAL-00002" summary="first commit">
-      <option name="closed" value="true" />
-      <created>1772396631906</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1772396631906</updated>
-    </task>
-    <task id="LOCAL-00003" summary="#Feature: estrutura básica, requirements e README com instrução">
-      <option name="closed" value="true" />
-      <created>1772398247277</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1772398247277</updated>
-    </task>
-    <task id="LOCAL-00004" summary="#Feature: estrutura básica, requirements e README com instrução">
-      <option name="closed" value="true" />
-      <created>1772398354079</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1772398354079</updated>
-    </task>
-    <task id="LOCAL-00005" summary="#Fix: mudança no README">
-      <option name="closed" value="true" />
-      <created>1772398570917</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1772398570917</updated>
-    </task>
-    <task id="LOCAL-00006" summary="#Feature: mudança no código para se adequar ao diagrama">
-      <option name="closed" value="true" />
-      <created>1772739454959</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1772739454959</updated>
-    </task>
-    <task id="LOCAL-00007" summary="#fix: nome">
-      <option name="closed" value="true" />
-      <created>1772739939149</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1772739939149</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Teste">
-      <option name="closed" value="true" />
-      <created>1772741774660</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1772741774660</updated>
-    </task>
-    <task id="LOCAL-00009" summary="#Fix: tentativa de corrigir o problema de conexão com mysql">
-      <option name="closed" value="true" />
-      <created>1772742274544</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1772742274545</updated>
-    </task>
-    <task id="LOCAL-00010" summary="#Fix: tentativa de corrigir o problema de conexão com mysql">
-      <option name="closed" value="true" />
-      <created>1772742293289</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1772742293289</updated>
-    </task>
-    <task id="LOCAL-00011" summary="#Feature: Gravar no mysql usuario_cliente">
-      <option name="closed" value="true" />
-      <created>1772753905104</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1772753905105</updated>
-    </task>
-    <task id="LOCAL-00012" summary="#Feature: rotas de ingresso">
-      <option name="closed" value="true" />
-      <created>1776271032192</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1776271032192</updated>
-    </task>
-    <task id="LOCAL-00013" summary="#Feature: rotas de ingresso">
-      <option name="closed" value="true" />
-      <created>1776278748887</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1776278748887</updated>
-    </task>
-    <task id="LOCAL-00014" summary="#Feature: teste de rotas utilizando token para autenticacao #Fix: registro de rotas em main">
-      <option name="closed" value="true" />
-      <created>1776285874812</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1776285874812</updated>
-    </task>
-    <task id="LOCAL-00015" summary="#Feature: documentação swagger">
-      <option name="closed" value="true" />
-      <created>1776442212713</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1776442212713</updated>
-    </task>
-    <option name="localTasksCounter" value="16" />
     <servers />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="first coomit" />
-    <MESSAGE value="first commit" />
-    <MESSAGE value="#Feature: estrutura básica, requirements e README com instrução" />
-    <MESSAGE value="#Fix: mudança no README" />
-    <MESSAGE value="#Feature: mudança no código para se adequar ao diagrama" />
-    <MESSAGE value="#fix: nome" />
-    <MESSAGE value="Teste" />
-    <MESSAGE value="#Fix: tentativa de corrigir o problema de conexão com mysql" />
-    <MESSAGE value="#Feature: Gravar no mysql usuario_cliente" />
-    <MESSAGE value="#Feature: rotas de ingresso" />
-    <MESSAGE value="#Feature: teste de rotas utilizando token para autenticacao #Fix: registro de rotas em main" />
-    <MESSAGE value="#Feature: documentação swagger" />
-    <option name="LAST_COMMIT_MESSAGE" value="#Feature: documentação swagger" />
   </component>
 </project>
