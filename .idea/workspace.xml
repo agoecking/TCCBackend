@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="#chore: AES e Argon2">
+    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="chore: mudança de usuário">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/ingresso.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/ingresso.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/usuario_organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario_organizacao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/auth_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/evento_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/evento_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/repositories/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/services/cryptography.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/cryptography.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/create_tables.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_tables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,11 +76,20 @@
       <option name="presentableId" value="Default" />
       <updated>1777032024136</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="chore: mudança de usuário">
+      <option name="closed" value="true" />
+      <created>1778091732351</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1778091732351</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="#chore: AES e Argon2" />
-    <option name="LAST_COMMIT_MESSAGE" value="#chore: AES e Argon2" />
+    <MESSAGE value="chore: mudança de usuário" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: mudança de usuário" />
   </component>
 </project>

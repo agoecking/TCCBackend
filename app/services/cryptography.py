@@ -5,6 +5,8 @@ import base64
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
+argon2_hasher = PasswordHasher()
+
 # ==================== ARGON2 HASHING ====================
 
 def hash_password_argon2(password: str) -> str:
