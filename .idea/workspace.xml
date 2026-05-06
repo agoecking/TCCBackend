@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="#Feature: repository e services criado, ainda não 100% implementados">
-      <change afterPath="$PROJECT_DIR$/app/services/cryptography.py" afterDir="false" />
+    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="#chore: AES e Argon2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/ingresso.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/ingresso.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/usuario_organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario_organizacao.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/auth_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/autenticacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/autenticacao.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/evento_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/evento_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/cryptography.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/cryptography.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/create_tables.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_tables.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,6 +26,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;agoecking&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/agoecking/TCCBackend.git&quot;,
+    &quot;accountId&quot;: &quot;ffc915cf-1b7e-425a-b977-435452efab4e&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="3Cnr87N7tIxXbnDRIGUtTJ5tWnK" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -32,10 +51,40 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-ca5e2b39c7df-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.308" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
+    <task id="LOCAL-00001" summary="#chore: AES e Argon2">
+      <option name="closed" value="true" />
+      <created>1776975654481</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1776975654481</updated>
+    </task>
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="#chore: AES e Argon2" />
+      <created>1777032024136</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777032024136</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="#chore: AES e Argon2" />
+    <option name="LAST_COMMIT_MESSAGE" value="#chore: AES e Argon2" />
   </component>
 </project>

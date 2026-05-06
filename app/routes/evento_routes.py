@@ -1,10 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app.database import SessionLocal
 from app.models.evento import Evento
-
-from app.routes.auth_routes import token_required
 from app.models.usuario import TipoUsuario
-
+from app.models.usuario_organizacao import UsuarioOrganizacao
+from app.routes.auth_routes import token_required
 from app.repositories.evento_repository import EventoRepository
 
 eventos_bp = Blueprint('eventos', __name__, url_prefix='/api/eventos')
@@ -51,7 +50,7 @@ def criar_evento():
     tags:
       - Eventos
     summary: Criar evento
-    description: Requer JWT no header Authorization e usuário com tipo ORGANIZACAO.
+    description: Cria um evento para a organização do usuário autenticado. Não recebe id_organizacao no body, pois a organização é identificada a partir do usuário logado.
     security:
       - BearerAuth: []
     consumes:
@@ -62,7 +61,7 @@ def criar_evento():
         required: true
         schema:
           type: object
-          required: [nome, quantidade_ingressos, id_organizacao]
+          required: [nome, quantidade_ingressos]
           properties:
             nome:
               type: string
@@ -70,18 +69,17 @@ def criar_evento():
             quantidade_ingressos:
               type: integer
               example: 100
-            id_organizacao:
-              type: integer
-              example: 1
     responses:
       201:
-        description: Evento criado
+        description: Evento criado com sucesso
       400:
-        description: Erro (campos faltando ou falha ao salvar)
+        description: Campos obrigatórios faltando ou erro ao salvar
       401:
-        description: Token não fornecido / inválido
+        description: Token não fornecido ou inválido
       403:
         description: Apenas ORGANIZAÇÃO pode criar evento
+      404:
+        description: Usuário de organização não encontrado
     """
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode criar evento'}), 403
@@ -90,9 +88,16 @@ def criar_evento():
     try:
         data = request.get_json() or {}
 
-        required = ['nome', 'quantidade_ingressos', 'id_organizacao']
+        required = ['nome', 'quantidade_ingressos']
         if not all(k in data for k in required):
             return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
+
+        usuario = db.query(UsuarioOrganizacao).filter(
+            UsuarioOrganizacao.id == request.usuario_id
+        ).first()
+
+        if not usuario:
+            return jsonify({'erro': 'Usuário de organização não encontrado'}), 404
 
         repo = EventoRepository(db)
 
@@ -100,10 +105,10 @@ def criar_evento():
             id=None,
             nome=data['nome'],
             quantidade_ingressos=data['quantidade_ingressos'],
-            id_organizacao=data['id_organizacao']
+            id_organizacao=usuario.organizacao_id
         )
 
-        repo.create(evento)  # em vez de db.add(evento)
+        repo.create(evento)
 
         db.commit()
         db.refresh(evento)
@@ -147,7 +152,7 @@ def buscar_evento(id):
     db = SessionLocal()
     try:
         repo = EventoRepository(db)
-        evento = repo.get_by_id(id)  # em vez de db.query(...)
+        evento = repo.get_by_id(id)
 
         if not evento:
             return jsonify({'erro': 'Evento não encontrado'}), 404
@@ -174,7 +179,7 @@ def atualizar_evento(id):
     tags:
       - Eventos
     summary: Atualizar evento
-    description: Requer JWT no header Authorization e usuário com tipo ORGANIZACAO.
+    description: Atualiza um evento pertencente à organização do usuário autenticado.
     security:
       - BearerAuth: []
     consumes:
@@ -197,31 +202,38 @@ def atualizar_evento(id):
             quantidade_ingressos:
               type: integer
               example: 120
-            id_organizacao:
-              type: integer
-              example: 1
     responses:
       200:
-        description: Evento atualizado
-      401:
-        description: Token não fornecido / inválido
-      403:
-        description: Apenas ORGANIZAÇÃO pode atualizar evento
-      404:
-        description: Evento não encontrado
+        description: Evento atualizado com sucesso
       400:
         description: Erro
+      401:
+        description: Token não fornecido ou inválido
+      403:
+        description: Apenas ORGANIZAÇÃO pode atualizar evento ou evento pertence a outra organização
+      404:
+        description: Usuário de organização não encontrado ou evento não encontrado
     """
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode atualizar evento'}), 403
 
     db = SessionLocal()
     try:
+        usuario = db.query(UsuarioOrganizacao).filter(
+            UsuarioOrganizacao.id == request.usuario_id
+        ).first()
+
+        if not usuario:
+            return jsonify({'erro': 'Usuário de organização não encontrado'}), 404
+
         repo = EventoRepository(db)
         evento = repo.get_by_id(id)
 
         if not evento:
             return jsonify({'erro': 'Evento não encontrado'}), 404
+
+        if evento.id_organizacao != usuario.organizacao_id:
+            return jsonify({'erro': 'Você não pode alterar eventos de outra organização'}), 403
 
         data = request.get_json() or {}
 
@@ -229,11 +241,6 @@ def atualizar_evento(id):
             evento.nome = data['nome']
         if 'quantidade_ingressos' in data:
             evento.quantidade_ingressos = data['quantidade_ingressos']
-        if 'id_organizacao' in data:
-            evento.id_organizacao = data['id_organizacao']
-
-        # opcional: repo.update(evento) (só se você tiver objeto detached)
-        # repo.update(evento)
 
         db.commit()
         db.refresh(evento)
@@ -261,7 +268,7 @@ def deletar_evento(id):
     tags:
       - Eventos
     summary: Deletar evento
-    description: Requer JWT no header Authorization e usuário com tipo ORGANIZACAO.
+    description: Remove um evento pertencente à organização do usuário autenticado.
     security:
       - BearerAuth: []
     parameters:
@@ -272,28 +279,38 @@ def deletar_evento(id):
         description: ID do evento
     responses:
       200:
-        description: Evento deletado
-      401:
-        description: Token não fornecido / inválido
-      403:
-        description: Apenas ORGANIZAÇÃO pode deletar evento
-      404:
-        description: Evento não encontrado
+        description: Evento deletado com sucesso
       400:
         description: Erro
+      401:
+        description: Token não fornecido ou inválido
+      403:
+        description: Apenas ORGANIZAÇÃO pode deletar evento ou evento pertence a outra organização
+      404:
+        description: Usuário de organização não encontrado ou evento não encontrado
     """
     if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
         return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode deletar evento'}), 403
 
     db = SessionLocal()
     try:
+        usuario = db.query(UsuarioOrganizacao).filter(
+            UsuarioOrganizacao.id == request.usuario_id
+        ).first()
+
+        if not usuario:
+            return jsonify({'erro': 'Usuário de organização não encontrado'}), 404
+
         repo = EventoRepository(db)
         evento = repo.get_by_id(id)
 
         if not evento:
             return jsonify({'erro': 'Evento não encontrado'}), 404
 
-        repo.delete(evento)  # em vez de db.delete(evento)
+        if evento.id_organizacao != usuario.organizacao_id:
+            return jsonify({'erro': 'Você não pode deletar eventos de outra organização'}), 403
+
+        repo.delete(evento)
         db.commit()
 
         return jsonify({'mensagem': 'Evento deletado com sucesso'}), 200

@@ -9,6 +9,8 @@ from app.services.cryptography import (
 from app.database import SessionLocal
 from app.models.usuario import Usuario, TipoUsuario
 from app.models.usuario_cliente import UsuarioCliente
+from app.models.usuario_organizacao import UsuarioOrganizacao
+
 from app.models.endereco import Endereco
 from app.models.organizacao import Organizacao
 import jwt
@@ -481,6 +483,7 @@ def token_required(f):
     return decorated
 
 # ======================== REGISTER ORGANIZACAO ========================
+# ======================== REGISTER ORGANIZACAO ========================
 @auth_bp.route("/register-organizacao", methods=["POST"])
 def register_organizacao():
     """
@@ -489,7 +492,7 @@ def register_organizacao():
     tags:
       - Auth
     summary: Registrar organização
-    description: Cria uma organização e um usuário do tipo ORGANIZACAO (sem vínculo no banco).
+    description: Cria uma organização e um usuário administrador vinculado a ela.
     consumes:
       - application/json
     parameters:
@@ -531,18 +534,17 @@ def register_organizacao():
                   example: "0xorg"
     responses:
       201:
-        description: Organização registrada
+        description: Organização registrada com sucesso
       400:
-        description: Campos obrigatórios faltando / erro
+        description: Campos obrigatórios faltando ou erro ao salvar
       409:
-        description: Email/CPF/CNPJ já registrado
+        description: Email, CPF ou CNPJ já registrado
     """
     db = SessionLocal()
 
     try:
         data = request.get_json() or {}
 
-        # formato sugerido: { usuario: {...}, organizacao: {...} }
         usuario_data = data.get("usuario") or {}
         org_data = data.get("organizacao") or {}
 
@@ -552,18 +554,15 @@ def register_organizacao():
         if not all(k in usuario_data for k in required_usuario) or not all(k in org_data for k in required_org):
             return jsonify({"erro": "Campos obrigatórios faltando"}), 400
 
-        # valida duplicidade email/cpf
         if db.query(Usuario).filter(Usuario.email == usuario_data["email"]).first():
             return jsonify({"erro": "Email já registrado"}), 409
 
         if db.query(Usuario).filter(Usuario.cpf == usuario_data["cpf"]).first():
             return jsonify({"erro": "CPF já registrado"}), 409
 
-        # valida duplicidade CNPJ
         if db.query(Organizacao).filter(Organizacao.cnpj == org_data["cnpj"]).first():
             return jsonify({"erro": "CNPJ já registrado"}), 409
 
-        # cria organizacao
         org = Organizacao(
             id=None,
             nome=org_data["nome"],
@@ -571,25 +570,34 @@ def register_organizacao():
             acesso_ethereum=org_data["acesso_ethereum"],
         )
         db.add(org)
-        db.commit()
-        db.refresh(org)
+        db.flush()
 
-        # cria usuario organizacao (sem vínculo no banco, pois falta model/coluna para isso hoje)
-        usuario = Usuario(
+        usuario = UsuarioOrganizacao(
             nome=usuario_data["nome"],
             cpf=usuario_data["cpf"],
             email=usuario_data["email"],
             senha=hash_password_argon2(usuario_data["senha"]),
-            tipo_usuario=TipoUsuario.ORGANIZACAO
+            organizacao_id=org.id
         )
         db.add(usuario)
+
         db.commit()
+        db.refresh(org)
         db.refresh(usuario)
 
         return jsonify({
             "mensagem": "Organização registrada com sucesso",
-            "organizacao": {"id": org.id, "nome": org.nome, "cnpj": org.cnpj},
-            "usuario": {"id": usuario.id, "email": usuario.email, "tipo": usuario.tipo_usuario},
+            "organizacao": {
+                "id": org.id,
+                "nome": org.nome,
+                "cnpj": org.cnpj
+            },
+            "usuario": {
+                "id": usuario.id,
+                "email": usuario.email,
+                "tipo": usuario.tipo_usuario,
+                "organizacao_id": usuario.organizacao_id
+            },
         }), 201
 
     except Exception as e:

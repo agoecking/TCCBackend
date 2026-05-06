@@ -12,6 +12,7 @@ class Organizacao(Base):
     acesso_ethereum = Column(String(255), nullable=False)
 
     eventos = relationship("Evento", back_populates="organizacao")
+    usuarios_organizacao = relationship("UsuarioOrganizacao", back_populates="organizacao")
 
     def __init__(self, id: int, nome: str, cnpj: str, acesso_ethereum: str):
         self.id = id

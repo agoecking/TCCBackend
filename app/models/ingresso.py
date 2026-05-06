@@ -1,15 +1,13 @@
 from app.database import Base
-from app.interfaces.icrud import ICrud
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 
-class Ingresso(Base, ICrud):
+class Ingresso(Base):
     __tablename__ = "ingressos"
 
     id = Column(Integer, primary_key=True, index=True)
     id_evento = Column(Integer, ForeignKey('eventos.id'), nullable=False)
-
     id_cliente = Column(Integer, ForeignKey('usuarios_clientes.id'), nullable=True)
     status = Column(String(50), default="disponivel")
 
