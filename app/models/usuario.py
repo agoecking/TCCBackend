@@ -32,11 +32,11 @@ class Usuario(Base):
         self.senha = senha
         self.tipo_usuario = tipo_usuario
 
-    def cadastrar(self):
-        pass
-
-    def excluir(self):
-        pass
-
-    def alterar(self):
-        pass
+    # def cadastrar(self):
+    #     pass
+    #
+    # def excluir(self):
+    #     pass
+    #
+    # def alterar(self):
+    #     pass

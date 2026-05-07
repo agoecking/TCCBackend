@@ -20,17 +20,17 @@ class Evento(Base):
         self.quantidade_ingressos = quantidade_ingressos
         self.id_organizacao = id_organizacao
 
-    def criar(self):
-        pass
-
-    def gerar_ingressos(self):
-        pass
-
-    def cadastrar(self):
-        pass
-
-    def excluir(self):
-        pass
-
-    def alterar(self):
-        pass
+    # def criar(self):
+    #     pass
+    #
+    # def gerar_ingressos(self):
+    #     pass
+    #
+    # def cadastrar(self):
+    #     pass
+    #
+    # def excluir(self):
+    #     pass
+    #
+    # def alterar(self):
+    #     pass

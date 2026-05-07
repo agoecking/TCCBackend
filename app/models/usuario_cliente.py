@@ -25,14 +25,14 @@ class UsuarioCliente(Usuario):
         self.telefone = telefone
         self.acesso_ethereum = acesso_ethereum
 
-    def listar_ingressos(self, id_cliente: int):
-        pass
-
-    def cadastrar(self):
-        pass
-
-    def excluir(self):
-        pass
-
-    def alterar(self):
-        pass
+    # def listar_ingressos(self, id_cliente: int):
+    #     pass
+    #
+    # def cadastrar(self):
+    #     pass
+    #
+    # def excluir(self):
+    #     pass
+    #
+    # def alterar(self):
+    #     pass
