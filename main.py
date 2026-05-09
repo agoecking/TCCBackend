@@ -1,10 +1,13 @@
 from flask import Flask
+from flask_cors import CORS
+
 from app.config import config
 from flasgger import Swagger
 
 def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
+    CORS(app)
 
     swagger_config = {
         "headers": [],
