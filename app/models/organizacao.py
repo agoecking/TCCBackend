@@ -19,12 +19,3 @@ class Organizacao(Base):
         self.nome = nome
         self.cnpj = cnpj
         self.acesso_ethereum = acesso_ethereum
-
-    # def cadastrar(self):
-    #     pass
-    #
-    # def excluir(self):
-    #     pass
-    #
-    # def alterar(self):
-    #     pass

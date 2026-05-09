@@ -32,6 +32,9 @@ def listar_eventos():
             'id': e.id,
             'nome': e.nome,
             'quantidade_ingressos': e.quantidade_ingressos,
+            'data_hora': e.data_hora,
+            'descricao_evento': e.descricao_evento,
+            'local_evento': e.local_evento,
             'id_organizacao': e.id_organizacao,
             'id_usuario': e.id_usuario
         } for e in eventos]), 200
@@ -70,6 +73,9 @@ def criar_evento():
             quantidade_ingressos:
               type: integer
               example: 100
+             data_hora:
+                type: DateTime
+                example: 2027-08-08 12:12:12
     responses:
       201:
         description: Evento criado com sucesso
@@ -106,6 +112,9 @@ def criar_evento():
             id=None,
             nome=data['nome'],
             quantidade_ingressos=data['quantidade_ingressos'],
+            data_hora=data['data_hora'],
+            local_evento=data['local_evento'],
+            descricao_evento=data['descricao_evento'],
             id_organizacao=usuario.organizacao_id,
             id_usuario=usuario.id,
         )
@@ -119,6 +128,9 @@ def criar_evento():
             'id': evento.id,
             'nome': evento.nome,
             'quantidade_ingressos': evento.quantidade_ingressos,
+            'data_hora': evento.data_hora,
+            'local_evento': evento.local_evento,
+            'descricao_evento': evento.descricao_evento,
             'id_organizacao': evento.id_organizacao,
             'id_usuario': evento.id_usuario
         }), 201
@@ -164,6 +176,9 @@ def buscar_evento(id):
             'id': evento.id,
             'nome': evento.nome,
             'quantidade_ingressos': evento.quantidade_ingressos,
+            'data_hora': evento.data_hora,
+            'local_evento': evento.local_evento,
+            'descricao_evento': evento.descricao_evento,
             'id_organizacao': evento.id_organizacao
         }), 200
 

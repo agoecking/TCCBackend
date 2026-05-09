@@ -4,9 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="Feature: update nas rotas de eventos para usuario id. Fix: nome do banco no docker compose">
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    <list default="true" id="f871575a-9fbf-4e29-bd2a-4ea84cc7516a" name="Changes" comment="feature: biblioteca cors">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/evento.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/evento.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/organizacao.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/organizacao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/usuario.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/usuario_cliente.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/usuario_cliente.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routes/evento_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/evento_routes.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +109,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778355416963</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="feature: biblioteca cors">
+      <option name="closed" value="true" />
+      <created>1778355810171</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1778355810171</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -113,6 +125,7 @@
     <MESSAGE value="chore: mudança de usuário" />
     <MESSAGE value="fix: erro de sintaxe corrigido" />
     <MESSAGE value="Feature: update nas rotas de eventos para usuario id. Fix: nome do banco no docker compose" />
-    <option name="LAST_COMMIT_MESSAGE" value="Feature: update nas rotas de eventos para usuario id. Fix: nome do banco no docker compose" />
+    <MESSAGE value="feature: biblioteca cors" />
+    <option name="LAST_COMMIT_MESSAGE" value="feature: biblioteca cors" />
   </component>
 </project>

@@ -31,12 +31,3 @@ class Usuario(Base):
         self.email = email
         self.senha = senha
         self.tipo_usuario = tipo_usuario
-
-    # def cadastrar(self):
-    #     pass
-    #
-    # def excluir(self):
-    #     pass
-    #
-    # def alterar(self):
-    #     pass

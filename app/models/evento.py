@@ -1,6 +1,10 @@
+from datetime import datetime
+
 from app.database import Base
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+
+from app.models import Organizacao
 
 
 class Evento(Base):
@@ -11,28 +15,19 @@ class Evento(Base):
     quantidade_ingressos = Column(Integer, nullable=False)
     id_organizacao = Column(Integer, ForeignKey('organizacoes.id'), nullable=False)
     id_usuario = Column(Integer, ForeignKey('usuarios.id'), nullable=False)
+    descricao_evento = Column(String(280), nullable=False)
+    data_hora = Column(DateTime, nullable=False)
+    local_evento = Column(String(280), nullable=False)
 
     organizacao = relationship("Organizacao", back_populates="eventos")
     ingressos = relationship("Ingresso", back_populates="evento")
 
-    def __init__(self, id: int, nome: str, quantidade_ingressos: int, id_organizacao: int, id_usuario: int):
+    def __init__(self, id: int, nome: str, quantidade_ingressos: int, id_organizacao: int, id_usuario: int, descricao_evento: str, local_evento: str, data_hora: DateTime):
         self.id = id
         self.nome = nome
         self.quantidade_ingressos = quantidade_ingressos
         self.id_organizacao = id_organizacao
         self.id_usuario = id_usuario
-
-    # def criar(self):
-    #     pass
-    #
-    # def gerar_ingressos(self):
-    #     pass
-    #
-    # def cadastrar(self):
-    #     pass
-    #
-    # def excluir(self):
-    #     pass
-    #
-    # def alterar(self):
-    #     pass
+        self.data_hora = data_hora
+        self.descricao_evento = descricao_evento
+        self.local_evento = local_evento
