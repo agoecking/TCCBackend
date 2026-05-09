@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.database import SessionLocal
 from app.models.evento import Evento
-from app.models.usuario import TipoUsuario
+from app.models.usuario import TipoUsuario, Usuario
 from app.models.usuario_organizacao import UsuarioOrganizacao
 from app.routes.auth_routes import token_required
 from app.repositories.evento_repository import EventoRepository
@@ -32,7 +32,8 @@ def listar_eventos():
             'id': e.id,
             'nome': e.nome,
             'quantidade_ingressos': e.quantidade_ingressos,
-            'id_organizacao': e.id_organizacao
+            'id_organizacao': e.id_organizacao,
+            'id_usuario': e.id_usuario
         } for e in eventos]), 200
 
     except Exception as e:
@@ -105,7 +106,8 @@ def criar_evento():
             id=None,
             nome=data['nome'],
             quantidade_ingressos=data['quantidade_ingressos'],
-            id_organizacao=usuario.organizacao_id
+            id_organizacao=usuario.organizacao_id,
+            id_usuario=usuario.id,
         )
 
         repo.create(evento)
@@ -117,7 +119,8 @@ def criar_evento():
             'id': evento.id,
             'nome': evento.nome,
             'quantidade_ingressos': evento.quantidade_ingressos,
-            'id_organizacao': evento.id_organizacao
+            'id_organizacao': evento.id_organizacao,
+            'id_usuario': evento.id_usuario
         }), 201
 
     except Exception as e:
