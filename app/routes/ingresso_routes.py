@@ -5,6 +5,7 @@ from app.models.evento import Evento
 from app.models.compra import Compra
 from app.models.usuario_cliente import UsuarioCliente
 from app.routes.auth_routes import token_required
+from sqlalchemy import func
 from datetime import datetime
 
 ingressos_bp = Blueprint('ingressos', __name__, url_prefix='/api/ingressos')
@@ -67,7 +68,7 @@ def comprar_ingressos():
         ingressos_vendidos = db.query(Compra).filter(
             Compra.id_evento == evento.id
         ).with_entities(
-            db.func.sum(Compra.quantidade_ingressos)
+            func.sum(Compra.quantidade_ingressos)
         ).scalar() or 0
 
         ingressos_disponiveis = evento.quantidade_ingressos - ingressos_vendidos
@@ -201,7 +202,7 @@ def listar_ingressos_evento(evento_id):
         quantidade_vendida = db.query(Compra).filter(
             Compra.id_evento == evento_id
         ).with_entities(
-            db.func.sum(Compra.quantidade_ingressos)
+            func.sum(Compra.quantidade_ingressos)
         ).scalar() or 0
 
         disponivel = evento.quantidade_ingressos - quantidade_vendida
@@ -437,7 +438,7 @@ def cancelar_compra(compra_id):
 #         total_vendas = db.query(Compra).filter(
 #             Compra.id_evento == evento_id
 #         ).with_entities(
-#             db.func.sum(Compra.quantidade_ingressos),
+#             func.sum(Compra.quantidade_ingressos),
 #             db.func.count(Compra.id)
 #         ).first()
 #
@@ -457,6 +458,87 @@ def cancelar_compra(compra_id):
 #         return jsonify({'erro': str(e)}), 400
 #     finally:
 #         db.close()
+
+
+# ======================== POST - REGISTRAR MINT BLOCKCHAIN ========================
+@ingressos_bp.route('/registrar-mint', methods=['POST'])
+@token_required
+def registrar_mint():
+    """
+    Registra um mint feito pelo frontend via MetaMask
+    ---
+    tags:
+      - Ingressos
+    summary: Registrar mint de NFT
+    description: Após o usuário assinar a transação no MetaMask, o frontend envia o txHash e tokenId para o backend registrar.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [id_evento, token_id, tx_hash, carteira_comprador]
+          properties:
+            id_evento:
+              type: integer
+              example: 1
+            token_id:
+              type: integer
+              example: 42
+            tx_hash:
+              type: string
+              example: "0xabc123..."
+            carteira_comprador:
+              type: string
+              example: "0xDEF456..."
+    responses:
+      201:
+        description: Mint registrado com sucesso
+      400:
+        description: Campos obrigatórios faltando
+      404:
+        description: Evento não encontrado
+    """
+    db = SessionLocal()
+    try:
+        data = request.get_json()
+        id_cliente = request.usuario_id
+
+        campos = ['id_evento', 'token_id', 'tx_hash', 'carteira_comprador']
+        if not all(data.get(c) is not None for c in campos):
+            return jsonify({'erro': f'Campos obrigatórios: {campos}'}), 400
+
+        evento = db.query(Evento).filter(Evento.id == data['id_evento']).first()
+        if not evento:
+            return jsonify({'erro': 'Evento não encontrado'}), 404
+
+        ingresso = Ingresso(
+            id_evento=data['id_evento'],
+            id_cliente=id_cliente,
+            status='ativo',
+            token_id=data['token_id'],
+            tx_hash=data['tx_hash'],
+            carteira_comprador=data['carteira_comprador'],
+        )
+        db.add(ingresso)
+        db.commit()
+
+        return jsonify({
+            'mensagem': 'Mint registrado com sucesso',
+            'ingresso_id': ingresso.id,
+            'token_id': ingresso.token_id,
+            'tx_hash': ingresso.tx_hash,
+        }), 201
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
 
 
 # ======================== READ - HISTÓRICO DE COMPRAS ========================
