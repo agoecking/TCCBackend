@@ -73,9 +73,16 @@ def criar_evento():
             quantidade_ingressos:
               type: integer
               example: 100
-             data_hora:
-                type: DateTime
-                example: 2027-08-08 12:12:12
+            data_hora:
+              type: string
+              format: date-time
+              example: "2027-08-08T12:12:12"
+            local_evento:
+              type: string
+              example: "Curitiba"
+            descricao_evento:
+              type: string
+              example: "Novo evento teste"
     responses:
       201:
         description: Evento criado com sucesso

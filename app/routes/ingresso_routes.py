@@ -405,61 +405,6 @@ def cancelar_compra(compra_id):
         db.close()
 
 
-# ======================== READ - ESTATÍSTICAS DE VENDAS ========================
-# @ingressos_bp.route('/evento/<int:evento_id>/estatisticas', methods=['GET'])
-# def estatisticas_evento(evento_id):
-#     """
-#     Estatísticas de vendas do evento
-#     ---
-#     tags:
-#       - Ingressos
-#     summary: Estatísticas do evento
-#     parameters:
-#       - in: path
-#         name: evento_id
-#         type: integer
-#         required: true
-#         description: ID do evento
-#     responses:
-#       200:
-#         description: Estatísticas do evento
-#       404:
-#         description: Evento não encontrado
-#       400:
-#         description: Erro
-#     """
-#     db = SessionLocal()
-#
-#     try:
-#         evento = db.query(Evento).filter(Evento.id == evento_id).first()
-#         if not evento:
-#             return jsonify({'erro': 'Evento não encontrado'}), 404
-#
-#         total_vendas = db.query(Compra).filter(
-#             Compra.id_evento == evento_id
-#         ).with_entities(
-#             func.sum(Compra.quantidade_ingressos),
-#             db.func.count(Compra.id)
-#         ).first()
-#
-#         quantidade_vendida = total_vendas[0] or 0
-#         numero_compras = total_vendas[1] or 0
-#
-#         return jsonify({
-#             'evento': evento.nome,
-#             'total_ingressos': evento.quantidade_ingressos,
-#             'vendidos': quantidade_vendida,
-#             'disponivel': evento.quantidade_ingressos - quantidade_vendida,
-#             'numero_compras': numero_compras,
-#             'percentual_vendido': round((quantidade_vendida / evento.quantidade_ingressos * 100), 2)
-#         }), 200
-#
-#     except Exception as e:
-#         return jsonify({'erro': str(e)}), 400
-#     finally:
-#         db.close()
-
-
 # ======================== POST - REGISTRAR MINT BLOCKCHAIN ========================
 @ingressos_bp.route('/registrar-mint', methods=['POST'])
 @token_required
@@ -470,7 +415,6 @@ def registrar_mint():
     tags:
       - Ingressos
     summary: Registrar mint de NFT
-    description: Após o usuário assinar a transação no MetaMask, o frontend envia o txHash e tokenId para o backend registrar.
     security:
       - BearerAuth: []
     consumes:
@@ -539,6 +483,61 @@ def registrar_mint():
         return jsonify({'erro': str(e)}), 400
     finally:
         db.close()
+
+
+# ======================== READ - ESTATÍSTICAS DE VENDAS ========================
+# @ingressos_bp.route('/evento/<int:evento_id>/estatisticas', methods=['GET'])
+# def estatisticas_evento(evento_id):
+#     """
+#     Estatísticas de vendas do evento
+#     ---
+#     tags:
+#       - Ingressos
+#     summary: Estatísticas do evento
+#     parameters:
+#       - in: path
+#         name: evento_id
+#         type: integer
+#         required: true
+#         description: ID do evento
+#     responses:
+#       200:
+#         description: Estatísticas do evento
+#       404:
+#         description: Evento não encontrado
+#       400:
+#         description: Erro
+#     """
+#     db = SessionLocal()
+#
+#     try:
+#         evento = db.query(Evento).filter(Evento.id == evento_id).first()
+#         if not evento:
+#             return jsonify({'erro': 'Evento não encontrado'}), 404
+#
+#         total_vendas = db.query(Compra).filter(
+#             Compra.id_evento == evento_id
+#         ).with_entities(
+#             func.sum(Compra.quantidade_ingressos),
+#             db.func.count(Compra.id)
+#         ).first()
+#
+#         quantidade_vendida = total_vendas[0] or 0
+#         numero_compras = total_vendas[1] or 0
+#
+#         return jsonify({
+#             'evento': evento.nome,
+#             'total_ingressos': evento.quantidade_ingressos,
+#             'vendidos': quantidade_vendida,
+#             'disponivel': evento.quantidade_ingressos - quantidade_vendida,
+#             'numero_compras': numero_compras,
+#             'percentual_vendido': round((quantidade_vendida / evento.quantidade_ingressos * 100), 2)
+#         }), 200
+#
+#     except Exception as e:
+#         return jsonify({'erro': str(e)}), 400
+#     finally:
+#         db.close()
 
 
 # ======================== READ - HISTÓRICO DE COMPRAS ========================
