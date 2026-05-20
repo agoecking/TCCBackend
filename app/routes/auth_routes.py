@@ -1,10 +1,7 @@
-# ===== MUDANÇA 1: Imports (linhas 1-15) =====
 from flask import Blueprint, request, jsonify
 from app.services.cryptography import (
     hash_password_argon2,
     verify_password_argon2,
-    encrypt_data_aes,
-    decrypt_data_aes
 )
 from app.database import SessionLocal
 from app.models.usuario import Usuario, TipoUsuario
@@ -24,7 +21,7 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "tccbackend-dev-local-secret-key-fixa")
 AES_ENCRYPTION_KEY = os.getenv("AES_ENCRYPTION_KEY")
 
 if not AES_ENCRYPTION_KEY:
-    raise ValueError("AES_ENCRYPTION_KEY deve estar definida no .env")
+    print("[AVISO] AES_ENCRYPTION_KEY não definida no .env — criptografia AES desativada")
 
 # ======================== REGISTRAR CLIENTE ========================
 @auth_bp.route("/register-cliente", methods=["POST"])
@@ -521,7 +518,7 @@ def register_organizacao():
                   example: "123"
             organizacao:
               type: object
-              required: [nome, cnpj, acesso_ethereum]
+              required: [nome, cnpj]
               properties:
                 nome:
                   type: string
@@ -531,6 +528,7 @@ def register_organizacao():
                   example: "12.345.678/0001-90"
                 acesso_ethereum:
                   type: string
+                  description: "Opcional — salvo automaticamente via Navbar ao conectar MetaMask"
                   example: "0xorg"
     responses:
       201:
@@ -567,7 +565,7 @@ def register_organizacao():
             id=None,
             nome=org_data["nome"],
             cnpj=org_data["cnpj"],
-            carteira_ethereum=org_data.get("carteira_ethereum", ""),
+            carteira_ethereum=org_data.get("carteira_ethereum") or None,  # opcional — salvo via Navbar
         )
         db.add(org)
         db.flush()
@@ -612,7 +610,7 @@ def register_organizacao():
 @token_required
 def update_wallet():
     """
-    Atualizar carteira Ethereum do cliente logado
+    Atualizar carteira Ethereum do usuário logado (cliente ou organização)
     ---
     tags:
       - Auth
@@ -642,9 +640,8 @@ def update_wallet():
       400:
         description: Carteira inválida ou erro
       404:
-        description: Cliente não encontrado
+        description: Usuário não encontrado
     """
-    from app.models.usuario_cliente import UsuarioCliente
     db = SessionLocal()
     try:
         data = request.get_json() or {}
@@ -652,11 +649,31 @@ def update_wallet():
         if not carteira:
             return jsonify({'erro': 'carteira_ethereum é obrigatório'}), 400
 
-        cliente = db.query(UsuarioCliente).filter(UsuarioCliente.id == request.usuario_id).first()
-        if not cliente:
-            return jsonify({'erro': 'Cliente não encontrado'}), 404
+        if request.usuario_tipo == TipoUsuario.ORGANIZACAO:
+            # Organização: atualiza via UsuarioOrganizacao → Organizacao
+            usuario_org = db.query(UsuarioOrganizacao).filter(
+                UsuarioOrganizacao.id == request.usuario_id
+            ).first()
+            if not usuario_org:
+                return jsonify({'erro': 'Usuário de organização não encontrado'}), 404
 
-        cliente.carteira_ethereum = carteira
+            org = db.query(Organizacao).filter(
+                Organizacao.id == usuario_org.organizacao_id
+            ).first()
+            if not org:
+                return jsonify({'erro': 'Organização não encontrada'}), 404
+
+            org.carteira_ethereum = carteira
+        else:
+            # Cliente: atualiza diretamente em UsuarioCliente
+            cliente = db.query(UsuarioCliente).filter(
+                UsuarioCliente.id == request.usuario_id
+            ).first()
+            if not cliente:
+                return jsonify({'erro': 'Cliente não encontrado'}), 404
+
+            cliente.carteira_ethereum = carteira
+
         db.commit()
         return jsonify({'mensagem': 'Carteira atualizada', 'carteira_ethereum': carteira}), 200
     except Exception as e:

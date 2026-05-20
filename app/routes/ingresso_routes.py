@@ -26,9 +26,11 @@ def _make_ingresso_service(db):
     )
 
 
-# ======================== CREATE - COMPRAR INGRESSOS ========================
-@ingressos_bp.route('/comprar', methods=['POST'])
-@token_required
+# ======================== [LEGADO] CREATE - COMPRAR INGRESSOS ========================
+# ATENÇÃO: rota legada — substituída pelo fluxo MetaMask (/registrar-mint).
+# O frontend não chama mais esta rota. Mantida apenas para referência histórica no TCC.
+# @ingressos_bp.route('/comprar', methods=['POST'])
+# @token_required
 def comprar_ingressos():
     """
     Comprar ingressos (cliente logado)
@@ -196,12 +198,12 @@ def listar_ingressos_evento(evento_id):
 
         ingressos = db.query(Ingresso).filter(Ingresso.id_evento == evento_id).all()
 
-        # Contar quantidade vendida
-        quantidade_vendida = db.query(Compra).filter(
-            Compra.id_evento == evento_id
-        ).with_entities(
-            func.sum(Compra.quantidade_ingressos)
-        ).scalar() or 0
+        # Contar quantidade vendida direto na tabela Ingresso
+        # (mints via MetaMask não criam Compra, então contar por Compra era incorreto)
+        quantidade_vendida = db.query(Ingresso).filter(
+            Ingresso.id_evento == evento_id,
+            Ingresso.status != 'disponivel'
+        ).count()
 
         disponivel = evento.quantidade_ingressos - quantidade_vendida
 
@@ -253,8 +255,11 @@ def obter_ingresso(ingresso_id):
         return jsonify({
             'id': ingresso.id,
             'id_evento': ingresso.id_evento,
-            'evento': ingresso.evento.nome,
-            'status': 'ativo'
+            'evento': ingresso.evento.nome if ingresso.evento else None,
+            'status': ingresso.status,
+            'token_id': ingresso.token_id,
+            'tx_hash': ingresso.tx_hash,
+            'carteira_comprador': ingresso.carteira_comprador,
         }), 200
 
     except Exception as e:
@@ -334,9 +339,11 @@ def transferir_ingresso(ingresso_id):
       db.close()
       
 
-# ======================== DELETE - CANCELAR COMPRA ========================
-@ingressos_bp.route('/cancelar/<int:compra_id>', methods=['DELETE'])
-@token_required
+# ======================== [LEGADO] DELETE - CANCELAR COMPRA ========================
+# ATENÇÃO: rota legada — dependia do fluxo /comprar que foi substituído por /registrar-mint.
+# Mantida apenas para referência histórica no TCC.
+# @ingressos_bp.route('/cancelar/<int:compra_id>', methods=['DELETE'])
+# @token_required
 def cancelar_compra(compra_id):
     """
     Cancelar compra

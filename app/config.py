@@ -1,7 +1,15 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
+# Carrega o .env padrão
 load_dotenv()
+
+# Carrega o arquivo de segredos sensíveis (chaves blockchain, etc.)
+# Este arquivo NÃO é commitado — contém ALCHEMY_RPC_URL e BLOCKCHAIN_PRIVATE_KEY
+_secrets_file = Path(__file__).resolve().parent.parent / "-AHSOKA.env"
+if _secrets_file.exists():
+    load_dotenv(dotenv_path=_secrets_file, override=True)
 
 class Config:
     """Configuração base"""
