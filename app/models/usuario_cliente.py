@@ -10,7 +10,7 @@ class UsuarioCliente(Usuario):
 
     id = Column(Integer, ForeignKey('usuarios.id'), primary_key=True)
     telefone = Column(String(20), nullable=False)
-    acesso_ethereum = Column(String(255), nullable=False)
+    carteira_ethereum = Column('acesso_ethereum', String(255), nullable=True)
     endereco_id = Column(Integer, ForeignKey('enderecos.id'))
 
     endereco = relationship("Endereco", foreign_keys=[endereco_id], backref="usuario_cliente")
@@ -19,8 +19,8 @@ class UsuarioCliente(Usuario):
     }
 
     def __init__(self, nome: str, cpf: str, email: str, senha: str,
-                 endereco: Endereco, telefone: str, acesso_ethereum: str):
+                 endereco: Endereco, telefone: str, carteira_ethereum: str = ''):
         super().__init__(nome, cpf, email, senha, TipoUsuario.CLIENTE)
         self.endereco = endereco
         self.telefone = telefone
-        self.acesso_ethereum = acesso_ethereum
+        self.carteira_ethereum = carteira_ethereum

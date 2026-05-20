@@ -27,7 +27,7 @@ def cadastrar_cliente():
             - email
             - senha
             - telefone
-            - acesso_ethereum
+            - carteira_ethereum
             - endereco
           properties:
             nome:
@@ -45,7 +45,7 @@ def cadastrar_cliente():
             telefone:
               type: string
               example: "11999999999"
-            acesso_ethereum:
+            carteira_ethereum:
               type: string
               example: "0xabc"
             endereco:
@@ -78,7 +78,7 @@ def cadastrar_cliente():
     try:
         data = request.get_json()
 
-        if not all(k in data for k in ['nome', 'cpf', 'email', 'senha', 'telefone', 'acesso_ethereum', 'endereco']):
+        if not all(k in data for k in ['nome', 'cpf', 'email', 'senha', 'telefone', 'carteira_ethereum', 'endereco']):
             return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
 
         # Criar endereço
@@ -97,7 +97,7 @@ def cadastrar_cliente():
             email=data['email'],
             senha=data['senha'],
             telefone=data['telefone'],
-            acesso_ethereum=data['acesso_ethereum'],
+            carteira_ethereum=data['carteira_ethereum'],
             endereco=endereco
         )
 
@@ -152,7 +152,7 @@ def listar_clientes():
                 'email': cliente.email,
                 'cpf': cliente.cpf,
                 'telefone': cliente.telefone,
-                'acesso_ethereum': cliente.acesso_ethereum,
+                'carteira_ethereum': cliente.carteira_ethereum,
                 'endereco': {
                     'rua': cliente.endereco.rua if cliente.endereco else None,
                     'numero': cliente.endereco.numero if cliente.endereco else None,
@@ -206,7 +206,7 @@ def obter_cliente(cliente_id):
             'email': cliente.email,
             'cpf': cliente.cpf,
             'telefone': cliente.telefone,
-            'acesso_ethereum': cliente.acesso_ethereum,
+            'carteira_ethereum': cliente.carteira_ethereum,
             'endereco': {
                 'rua': cliente.endereco.rua if cliente.endereco else None,
                 'numero': cliente.endereco.numero if cliente.endereco else None,
@@ -251,7 +251,7 @@ def atualizar_cliente(cliente_id):
               type: string
             telefone:
               type: string
-            acesso_ethereum:
+            carteira_ethereum:
               type: string
             endereco:
               type: object
@@ -293,8 +293,8 @@ def atualizar_cliente(cliente_id):
             cliente.senha = data['senha']
         if 'telefone' in data:
             cliente.telefone = data['telefone']
-        if 'acesso_ethereum' in data:
-            cliente.acesso_ethereum = data['acesso_ethereum']
+        if 'carteira_ethereum' in data:
+            cliente.carteira_ethereum = data['carteira_ethereum']
 
         # Atualizar endereço se fornecido
         if 'endereco' in data and cliente.endereco:

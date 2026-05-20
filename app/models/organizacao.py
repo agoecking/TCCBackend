@@ -9,13 +9,13 @@ class Organizacao(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String(255), nullable=False)
     cnpj = Column(String(18), unique=True, nullable=False)
-    acesso_ethereum = Column(String(255), nullable=False)
+    carteira_ethereum = Column('acesso_ethereum', String(255), nullable=False)
 
     eventos = relationship("Evento", back_populates="organizacao")
     usuarios_organizacao = relationship("UsuarioOrganizacao", back_populates="organizacao")
 
-    def __init__(self, id: int, nome: str, cnpj: str, acesso_ethereum: str):
+    def __init__(self, id: int, nome: str, cnpj: str, carteira_ethereum: str):
         self.id = id
         self.nome = nome
         self.cnpj = cnpj
-        self.acesso_ethereum = acesso_ethereum
+        self.carteira_ethereum = carteira_ethereum

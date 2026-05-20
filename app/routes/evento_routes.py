@@ -5,6 +5,7 @@ from app.models.usuario import TipoUsuario, Usuario
 from app.models.usuario_organizacao import UsuarioOrganizacao
 from app.routes.auth_routes import token_required
 from app.repositories.evento_repository import EventoRepository
+from app.services.transacao import TransacaoService
 
 eventos_bp = Blueprint('eventos', __name__, url_prefix='/api/eventos')
 
@@ -36,7 +37,9 @@ def listar_eventos():
             'descricao_evento': e.descricao_evento,
             'local_evento': e.local_evento,
             'id_organizacao': e.id_organizacao,
-            'id_usuario': e.id_usuario
+            'id_usuario': e.id_usuario,
+            'blockchain_event_id': e.blockchain_event_id,
+            'ticket_price_wei': e.ticket_price_wei,
         } for e in eventos]), 200
 
     except Exception as e:
@@ -54,7 +57,10 @@ def criar_evento():
     tags:
       - Eventos
     summary: Criar evento
-    description: Cria um evento para a organização do usuário autenticado. Não recebe id_organizacao no body, pois a organização é identificada a partir do usuário logado.
+    description: |
+      Cria um evento para a organização do usuário autenticado.
+      Se ticket_price_wei for informado, o evento também é criado no contrato
+      KoynTicket na Sepolia e blockchain_event_id é salvo automaticamente.
     security:
       - BearerAuth: []
     consumes:
@@ -69,7 +75,7 @@ def criar_evento():
           properties:
             nome:
               type: string
-              example: "Evento 1"
+              example: "Show do Metallica 2027"
             quantidade_ingressos:
               type: integer
               example: 100
@@ -82,10 +88,22 @@ def criar_evento():
               example: "Curitiba"
             descricao_evento:
               type: string
-              example: "Novo evento teste"
+              example: "Maior show do ano"
+            ticket_price_wei:
+              type: integer
+              example: 1000000000000000
+              description: "Preço em wei (obrigatório para criar no blockchain)"
+            max_resale_price_wei:
+              type: integer
+              example: 0
+              description: "Teto de revenda em wei. 0 = sem limite."
+            royalty_bps:
+              type: integer
+              example: 1000
+              description: "Royalty do organizador em basis points (1000 = 10%)"
     responses:
       201:
-        description: Evento criado com sucesso
+        description: Evento criado (com blockchain_event_id se ticket_price_wei informado)
       400:
         description: Campos obrigatórios faltando ou erro ao salvar
       401:
@@ -115,21 +133,39 @@ def criar_evento():
 
         repo = EventoRepository(db)
 
+        ticket_price_wei = data.get('ticket_price_wei')
+
         evento = Evento(
             id=None,
             nome=data['nome'],
             quantidade_ingressos=data['quantidade_ingressos'],
-            data_hora=data['data_hora'],
-            local_evento=data['local_evento'],
-            descricao_evento=data['descricao_evento'],
+            data_hora=data.get('data_hora'),
+            local_evento=data.get('local_evento'),
+            descricao_evento=data.get('descricao_evento'),
             id_organizacao=usuario.organizacao_id,
             id_usuario=usuario.id,
+            ticket_price_wei=str(ticket_price_wei) if ticket_price_wei is not None else None,
         )
 
         repo.create(evento)
-
         db.commit()
         db.refresh(evento)
+
+        # ── Registrar evento no contrato KoynTicket se preço informado ────
+        if ticket_price_wei is not None:
+            try:
+                transacao_svc = TransacaoService()
+                blockchain_event_id = transacao_svc.criar_evento_blockchain(
+                    nome=data['nome'],
+                    ticket_price_wei=int(ticket_price_wei),
+                    max_tickets=data['quantidade_ingressos'],
+                    max_resale_price_wei=int(data.get('max_resale_price_wei', 0)),
+                    royalty_bps=int(data.get('royalty_bps', 1000)),
+                )
+                evento.blockchain_event_id = blockchain_event_id
+                db.commit()
+            except Exception as e:
+                print(f"[Blockchain] Erro ao criar evento {evento.id} no contrato: {e}")
 
         return jsonify({
             'id': evento.id,
@@ -139,7 +175,9 @@ def criar_evento():
             'local_evento': evento.local_evento,
             'descricao_evento': evento.descricao_evento,
             'id_organizacao': evento.id_organizacao,
-            'id_usuario': evento.id_usuario
+            'id_usuario': evento.id_usuario,
+            'blockchain_event_id': evento.blockchain_event_id,
+            'ticket_price_wei': evento.ticket_price_wei,
         }), 201
 
     except Exception as e:
@@ -186,7 +224,9 @@ def buscar_evento(id):
             'data_hora': evento.data_hora,
             'local_evento': evento.local_evento,
             'descricao_evento': evento.descricao_evento,
-            'id_organizacao': evento.id_organizacao
+            'id_organizacao': evento.id_organizacao,
+            'blockchain_event_id': evento.blockchain_event_id,
+            'ticket_price_wei': evento.ticket_price_wei,
         }), 200
 
     except Exception as e:

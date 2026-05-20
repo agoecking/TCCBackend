@@ -97,7 +97,7 @@ def register_cliente():
         data = request.get_json()
 
         # Validações
-        required_fields = ['nome', 'cpf', 'email', 'senha', 'telefone', 'acesso_ethereum', 'endereco']
+        required_fields = ['nome', 'cpf', 'email', 'senha', 'telefone', 'endereco']
         if not all(field in data for field in required_fields):
             return jsonify({'erro': 'Campos obrigatórios faltando'}), 400
 
@@ -127,7 +127,7 @@ def register_cliente():
             email=data['email'],
             senha=hash_password_argon2(data['senha']),
             telefone=data['telefone'],
-            acesso_ethereum=data['acesso_ethereum'],
+            carteira_ethereum=data.get('carteira_ethereum', ''),
             endereco=endereco
         )
 
@@ -549,7 +549,7 @@ def register_organizacao():
         org_data = data.get("organizacao") or {}
 
         required_usuario = ["nome", "cpf", "email", "senha"]
-        required_org = ["nome", "cnpj", "acesso_ethereum"]
+        required_org = ["nome", "cnpj"]
 
         if not all(k in usuario_data for k in required_usuario) or not all(k in org_data for k in required_org):
             return jsonify({"erro": "Campos obrigatórios faltando"}), 400
@@ -567,7 +567,7 @@ def register_organizacao():
             id=None,
             nome=org_data["nome"],
             cnpj=org_data["cnpj"],
-            acesso_ethereum=org_data["acesso_ethereum"],
+            carteira_ethereum=org_data.get("carteira_ethereum", ""),
         )
         db.add(org)
         db.flush()
@@ -603,5 +603,64 @@ def register_organizacao():
     except Exception as e:
         db.rollback()
         return jsonify({"erro": str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== ATUALIZAR CARTEIRA ========================
+@auth_bp.route("/update-wallet", methods=["PATCH"])
+@token_required
+def update_wallet():
+    """
+    Atualizar carteira Ethereum do cliente logado
+    ---
+    tags:
+      - Auth
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: header
+        name: Authorization
+        type: string
+        required: true
+        description: "Bearer <token>"
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [carteira_ethereum]
+          properties:
+            carteira_ethereum:
+              type: string
+              example: "0xAbCd1234..."
+    responses:
+      200:
+        description: Carteira atualizada
+      400:
+        description: Carteira inválida ou erro
+      404:
+        description: Cliente não encontrado
+    """
+    from app.models.usuario_cliente import UsuarioCliente
+    db = SessionLocal()
+    try:
+        data = request.get_json() or {}
+        carteira = data.get('carteira_ethereum', '').strip()
+        if not carteira:
+            return jsonify({'erro': 'carteira_ethereum é obrigatório'}), 400
+
+        cliente = db.query(UsuarioCliente).filter(UsuarioCliente.id == request.usuario_id).first()
+        if not cliente:
+            return jsonify({'erro': 'Cliente não encontrado'}), 404
+
+        cliente.carteira_ethereum = carteira
+        db.commit()
+        return jsonify({'mensagem': 'Carteira atualizada', 'carteira_ethereum': carteira}), 200
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
     finally:
         db.close()
