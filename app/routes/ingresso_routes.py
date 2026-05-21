@@ -155,6 +155,8 @@ def meus_ingressos():
                 'token_id': ing.token_id,
                 'tx_hash': ing.tx_hash,
                 'carteira_comprador': ing.carteira_comprador,
+                'resale_price_wei': ing.resale_price_wei,
+                'max_resale_price_wei': ing.evento.max_resale_price_wei if ing.evento else None,
             })
 
         resultado = list(eventos_map.values())
@@ -421,8 +423,8 @@ def anunciar_revenda(ingresso_id):
       - Ingressos
     summary: Anunciar revenda
     description: |
-      Coloca o ingresso à venda no mercado de revenda.
-      Se o ingresso tiver token_id, também chama listForResale() no contrato.
+      Registra o ingresso como à venda no banco após o frontend assinar listForResale()
+      via MetaMask. O tx_hash da transação on-chain é salvo para rastreabilidade.
     security:
       - BearerAuth: []
     consumes:
@@ -437,12 +439,15 @@ def anunciar_revenda(ingresso_id):
         required: true
         schema:
           type: object
-          required: [price_wei]
+          required: [price_wei, tx_hash]
           properties:
             price_wei:
               type: integer
               example: 1500000000000000
               description: "Preço de revenda em wei"
+            tx_hash:
+              type: string
+              description: "Hash da transação listForResale() já assinada via MetaMask"
     responses:
       200:
         description: Ingresso anunciado para revenda
@@ -460,9 +465,12 @@ def anunciar_revenda(ingresso_id):
     try:
         data = request.get_json() or {}
         price_wei = data.get('price_wei')
+        tx_hash = data.get('tx_hash')
 
         if price_wei is None:
             return jsonify({'erro': 'price_wei é obrigatório'}), 400
+        if not tx_hash:
+            return jsonify({'erro': 'tx_hash é obrigatório (assine via MetaMask antes)'}), 400
 
         service = _make_ingresso_service(db)
         ingresso = service.anunciar_revenda(
@@ -471,18 +479,8 @@ def anunciar_revenda(ingresso_id):
         )
 
         ingresso.resale_price_wei = str(price_wei)
+        ingresso.tx_hash = tx_hash  # atualiza com o hash da transação de listagem
         db.commit()
-
-        tx_hash = None
-        if ingresso.token_id is not None:
-            try:
-                transacao_svc = TransacaoService()
-                tx_hash = transacao_svc.anunciar_revenda(
-                    token_id=ingresso.token_id,
-                    price_wei=int(price_wei),
-                )
-            except Exception as e:
-                print(f"[Blockchain] Erro ao listar revenda token {ingresso.token_id}: {e}")
 
         return jsonify({
             'mensagem': 'Ingresso anunciado para revenda',

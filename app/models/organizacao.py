@@ -10,7 +10,7 @@ class Organizacao(Base):
     nome = Column(String(255), nullable=False)
     cnpj = Column(String(18), unique=True, nullable=False)
     # nullable=True — carteira não é exigida no cadastro; salva automaticamente via Navbar (igual ao cliente)
-    carteira_ethereum = Column('acesso_ethereum', String(255), nullable=True)
+    carteira_ethereum = Column(String(255), nullable=True)
 
     eventos = relationship("Evento", back_populates="organizacao")
     usuarios_organizacao = relationship("UsuarioOrganizacao", back_populates="organizacao")

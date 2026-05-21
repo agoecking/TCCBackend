@@ -40,6 +40,7 @@ def listar_eventos():
             'id_usuario': e.id_usuario,
             'blockchain_event_id': e.blockchain_event_id,
             'ticket_price_wei': e.ticket_price_wei,
+            'max_resale_price_wei': e.max_resale_price_wei,
         } for e in eventos]), 200
 
     except Exception as e:
@@ -134,6 +135,7 @@ def criar_evento():
         repo = EventoRepository(db)
 
         ticket_price_wei = data.get('ticket_price_wei')
+        max_resale_price_wei = data.get('max_resale_price_wei')
 
         evento = Evento(
             id=None,
@@ -145,6 +147,7 @@ def criar_evento():
             id_organizacao=usuario.organizacao_id,
             id_usuario=usuario.id,
             ticket_price_wei=str(ticket_price_wei) if ticket_price_wei is not None else None,
+            max_resale_price_wei=str(max_resale_price_wei) if max_resale_price_wei is not None else None,
         )
 
         repo.create(evento)
@@ -155,11 +158,12 @@ def criar_evento():
         if ticket_price_wei is not None:
             try:
                 transacao_svc = TransacaoService()
+                _max_resale = int(max_resale_price_wei) if max_resale_price_wei is not None else 0
                 blockchain_event_id = transacao_svc.criar_evento_blockchain(
                     nome=data['nome'],
                     ticket_price_wei=int(ticket_price_wei),
                     max_tickets=data['quantidade_ingressos'],
-                    max_resale_price_wei=int(data.get('max_resale_price_wei', 0)),
+                    max_resale_price_wei=_max_resale,
                     royalty_bps=int(data.get('royalty_bps', 1000)),
                 )
                 evento.blockchain_event_id = blockchain_event_id
@@ -178,6 +182,7 @@ def criar_evento():
             'id_usuario': evento.id_usuario,
             'blockchain_event_id': evento.blockchain_event_id,
             'ticket_price_wei': evento.ticket_price_wei,
+            'max_resale_price_wei': evento.max_resale_price_wei,
         }), 201
 
     except Exception as e:
@@ -227,6 +232,7 @@ def buscar_evento(id):
             'id_organizacao': evento.id_organizacao,
             'blockchain_event_id': evento.blockchain_event_id,
             'ticket_price_wei': evento.ticket_price_wei,
+            'max_resale_price_wei': evento.max_resale_price_wei,
         }), 200
 
     except Exception as e:

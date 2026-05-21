@@ -19,12 +19,13 @@ class Evento(Base):
     data_hora = Column(DateTime, nullable=False)
     local_evento = Column(String(280), nullable=False)
     blockchain_event_id = Column(Integer, nullable=True)
-    ticket_price_wei = Column(String(32), nullable=True)  # preço em wei como string (evita overflow)
+    ticket_price_wei = Column(String(32), nullable=True)          # preço em wei como string (evita overflow)
+    max_resale_price_wei = Column(String(32), nullable=True)      # teto de revenda em wei (0 ou NULL = sem limite)
 
     organizacao = relationship("Organizacao", back_populates="eventos")
     ingressos = relationship("Ingresso", back_populates="evento")
 
-    def __init__(self, id: int, nome: str, quantidade_ingressos: int, id_organizacao: int, id_usuario: int, descricao_evento: str, local_evento: str, data_hora: DateTime, ticket_price_wei: str = None, blockchain_event_id: int = None):
+    def __init__(self, id: int, nome: str, quantidade_ingressos: int, id_organizacao: int, id_usuario: int, descricao_evento: str, local_evento: str, data_hora: DateTime, ticket_price_wei: str = None, blockchain_event_id: int = None, max_resale_price_wei: str = None):
         self.id = id
         self.nome = nome
         self.quantidade_ingressos = quantidade_ingressos
@@ -35,3 +36,4 @@ class Evento(Base):
         self.local_evento = local_evento
         self.ticket_price_wei = ticket_price_wei
         self.blockchain_event_id = blockchain_event_id
+        self.max_resale_price_wei = max_resale_price_wei

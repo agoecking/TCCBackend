@@ -10,7 +10,7 @@ class UsuarioCliente(Usuario):
 
     id = Column(Integer, ForeignKey('usuarios.id'), primary_key=True)
     telefone = Column(String(20), nullable=False)
-    carteira_ethereum = Column('acesso_ethereum', String(255), nullable=True)
+    carteira_ethereum = Column(String(255), nullable=True)
     endereco_id = Column(Integer, ForeignKey('enderecos.id'))
 
     endereco = relationship("Endereco", foreign_keys=[endereco_id], backref="usuario_cliente")
