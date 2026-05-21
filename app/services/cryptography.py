@@ -1,12 +1,9 @@
-from cryptography.fernet import Fernet
 import os
-import base64
+from cryptography.fernet import Fernet
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
 argon2_hasher = PasswordHasher()
-
-# ==================== ARGON2 HASHING ====================
 
 def hash_password_argon2(password: str) -> str:
     return argon2_hasher.hash(password)
@@ -18,21 +15,23 @@ def verify_password_argon2(password_hash: str, password: str) -> bool:
     except VerifyMismatchError:
         return False
 
-# ==================== AES-256 ENCRYPTION ====================
-
 def generate_aes_key() -> str:
-    key = Fernet.generate_key()
-    return key.decode('utf-8')
+    return Fernet.generate_key().decode("utf-8")
 
-def get_aes_cipher(encryption_key: str) -> Fernet:
-    return Fernet(encryption_key.encode('utf-8'))
+def get_aes_cipher(encryption_key: str | None = None) -> Fernet:
+    key = encryption_key or os.getenv("DATA_ENCRYPTION_KEY")
+    if not key:
+        raise ValueError("DATA_ENCRYPTION_KEY não configurada")
+    return Fernet(key.encode("utf-8"))
 
-def encrypt_data_aes(data: str, encryption_key: str) -> str:
+def encrypt_data_aes(data: str | None, encryption_key: str | None = None) -> str | None:
+    if data is None:
+        return None
     cipher = get_aes_cipher(encryption_key)
-    encrypted = cipher.encrypt(data.encode('utf-8'))
-    return encrypted.decode('utf-8')
+    return cipher.encrypt(str(data).encode("utf-8")).decode("utf-8")
 
-def decrypt_data_aes(encrypted_data: str, encryption_key: str) -> str:
+def decrypt_data_aes(encrypted_data: str | None, encryption_key: str | None = None) -> str | None:
+    if encrypted_data is None:
+        return None
     cipher = get_aes_cipher(encryption_key)
-    decrypted = cipher.decrypt(encrypted_data.encode('utf-8'))
-    return decrypted.decode('utf-8')
+    return cipher.decrypt(encrypted_data.encode("utf-8")).decode("utf-8")

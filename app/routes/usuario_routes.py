@@ -290,7 +290,7 @@ def atualizar_cliente(cliente_id):
         if 'email' in data:
             cliente.email = data['email']
         if 'senha' in data:
-            cliente.senha = data['senha']
+            cliente.set_senha(data['senha'])
         if 'telefone' in data:
             cliente.telefone = data['telefone']
         if 'carteira_ethereum' in data:
