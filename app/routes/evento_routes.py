@@ -312,6 +312,12 @@ def atualizar_evento(id):
             evento.nome = data['nome']
         if 'quantidade_ingressos' in data:
             evento.quantidade_ingressos = data['quantidade_ingressos']
+        if 'descricao_evento' in data:
+            evento.descricao_evento = data['descricao_evento']
+        if 'local_evento' in data:
+            evento.local_evento = data['local_evento']
+        if 'data_hora' in data:
+            evento.data_hora = data['data_hora']
 
         db.commit()
         db.refresh(evento)
@@ -320,6 +326,9 @@ def atualizar_evento(id):
             'id': evento.id,
             'nome': evento.nome,
             'quantidade_ingressos': evento.quantidade_ingressos,
+            'descricao_evento': evento.descricao_evento,
+            'local_evento': evento.local_evento,
+            'data_hora': evento.data_hora,
             'id_organizacao': evento.id_organizacao
         }), 200
 
