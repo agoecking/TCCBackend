@@ -1,4 +1,5 @@
 from __future__ import annotations
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.models.compra import Compra
 from app.repositories.crud_repository import CrudRepository
@@ -17,7 +18,7 @@ class CompraRepository(CrudRepository):
         total = (
             self.db.query(Compra)
             .filter(Compra.id_evento == id_evento)
-            .with_entities(self.db.func.sum(Compra.quantidade_ingressos))
+            .with_entities(func.sum(Compra.quantidade_ingressos))
             .scalar()
         )
         return total or 0

@@ -3,17 +3,34 @@ from app.database import SessionLocal
 from app.models.ingresso import Ingresso
 from app.models.evento import Evento
 from app.models.compra import Compra
+from app.models.usuario import TipoUsuario
 from app.models.usuario_cliente import UsuarioCliente
 from app.routes.auth_routes import token_required
+from app.repositories.evento_repository import EventoRepository
+from app.repositories.compra_repository import CompraRepository
+from app.repositories.ingresso_repository import IngressoRepository
+from app.services.ingresso_service import IngressoService
+from app.services.errors import ValidationError, NotFoundError
 from sqlalchemy import func
 from datetime import datetime
 
 ingressos_bp = Blueprint('ingressos', __name__, url_prefix='/api/ingressos')
 
 
-# ======================== CREATE - COMPRAR INGRESSOS ========================
-@ingressos_bp.route('/comprar', methods=['POST'])
-@token_required
+def _make_ingresso_service(db):
+    return IngressoService(
+        db=db,
+        evento_repo=EventoRepository(db),
+        compra_repo=CompraRepository(db),
+        ingresso_repo=IngressoRepository(db),
+    )
+
+
+# ======================== [LEGADO] CREATE - COMPRAR INGRESSOS ========================
+# ATENÇÃO: rota legada — substituída pelo fluxo MetaMask (/registrar-mint).
+# O frontend não chama mais esta rota. Mantida apenas para referência histórica no TCC.
+# @ingressos_bp.route('/comprar', methods=['POST'])
+# @token_required
 def comprar_ingressos():
     """
     Comprar ingressos (cliente logado)
@@ -21,7 +38,11 @@ def comprar_ingressos():
     tags:
       - Ingressos
     summary: Comprar ingressos
-    description: Cliente compra ingressos de um evento. Requer JWT no header Authorization.
+    description: |
+      Cliente autenticado compra ingressos de um evento.
+      Se o evento tiver blockchain_event_id configurado, cada ingresso é mintado
+      como NFT na Sepolia automaticamente após a compra off-chain.
+      Requer JWT no header Authorization.
     security:
       - BearerAuth: []
     consumes:
@@ -42,67 +63,43 @@ def comprar_ingressos():
               example: 2
     responses:
       201:
-        description: Compra criada e ingressos gerados
+        description: Compra criada e ingressos gerados (com NFT se evento tiver blockchain_event_id)
       400:
-        description: Erro de validação (campos faltando ou quantidade insuficiente)
+        description: Erro de validação
       401:
         description: Token não fornecido / inválido
+      403:
+        description: Apenas clientes podem comprar ingressos
       404:
         description: Evento não encontrado
     """
     db = SessionLocal()
 
     try:
-        data = request.get_json()
-        id_cliente = request.usuario_id  # Do token JWT
+        data = request.get_json() or {}
+        id_cliente = request.usuario_id
+
+        # Apenas clientes compram ingressos — organizações não
+        if request.usuario_tipo != TipoUsuario.CLIENTE:
+            return jsonify({'erro': 'Apenas clientes podem comprar ingressos'}), 403
 
         if not data.get('id_evento') or not data.get('quantidade'):
             return jsonify({'erro': 'id_evento e quantidade são obrigatórios'}), 400
 
-        # Buscar evento
-        evento = db.query(Evento).filter(Evento.id == data['id_evento']).first()
-        if not evento:
-            return jsonify({'erro': 'Evento não encontrado'}), 404
-
-        # Verificar disponibilidade
-        ingressos_vendidos = db.query(Compra).filter(
-            Compra.id_evento == evento.id
-        ).with_entities(
-            func.sum(Compra.quantidade_ingressos)
-        ).scalar() or 0
-
-        ingressos_disponiveis = evento.quantidade_ingressos - ingressos_vendidos
-
-        if data['quantidade'] > ingressos_disponiveis:
-            return jsonify({
-                'erro': f'Quantidade insuficiente. Disponíveis: {ingressos_disponiveis}'
-            }), 400
-
-        # Criar compra
-        compra = Compra(
+        service = _make_ingresso_service(db)
+        resultado = service.comprar_ingressos(
             id_cliente=id_cliente,
-            id_evento=evento.id,
-            quantidade_ingressos=data['quantidade']
+            id_evento=data['id_evento'],
+            quantidade=data['quantidade'],
         )
-
-        # Criar ingressos individuais
-        ingressos = []
-        for i in range(data['quantidade']):
-            ingresso = Ingresso(id_evento=evento.id)
-            ingressos.append(ingresso)
-
-        db.add(compra)
-        db.add_all(ingressos)
-        db.commit()
 
         return jsonify({
             'mensagem': 'Ingressos comprados com sucesso',
-            'id_compra': compra.id,
-            'quantidade': data['quantidade'],
-            'evento': evento.nome,
-            'ingressos_ids': [ing.id for ing in ingressos]
+            **resultado,
         }), 201
 
+    except (ValidationError, NotFoundError) as e:
+        return jsonify({'erro': str(e)}), 400
     except Exception as e:
         db.rollback()
         return jsonify({'erro': str(e)}), 400
@@ -137,27 +134,32 @@ def meus_ingressos():
     try:
         id_cliente = request.usuario_id
 
-        # Buscar compras do cliente
-        compras = db.query(Compra).filter(Compra.id_cliente == id_cliente).all()
+        ingressos = db.query(Ingresso).filter(Ingresso.id_cliente == id_cliente).all()
 
-        if not compras:
-            return jsonify({'mensagem': 'Nenhum ingresso encontrado'}), 404
+        if not ingressos:
+            return jsonify({'ingressos': [], 'total': 0}), 200
 
-        resultado = []
-        for compra in compras:
-            # Buscar ingressos dessa compra
-            ingressos = db.query(Ingresso).filter(
-                Ingresso.id_evento == compra.id_evento
-            ).all()
-
-            resultado.append({
-                'id_compra': compra.id,
-                'evento': compra.evento.nome,
-                'quantidade': compra.quantidade_ingressos,
-                'ingressos': [{'id': ing.id} for ing in ingressos],
-                'data_compra': compra.id  # você pode adicionar um campo de timestamp
+        # Agrupa por evento
+        eventos_map: dict = {}
+        for ing in ingressos:
+            ev_id = ing.id_evento
+            if ev_id not in eventos_map:
+                eventos_map[ev_id] = {
+                    'evento': ing.evento.nome if ing.evento else f'Evento #{ev_id}',
+                    'ingressos': []
+                }
+            eventos_map[ev_id]['ingressos'].append({
+                'id': ing.id,
+                'id_evento': ing.id_evento,
+                'status': ing.status,
+                'token_id': ing.token_id,
+                'tx_hash': ing.tx_hash,
+                'carteira_comprador': ing.carteira_comprador,
+                'resale_price_wei': ing.resale_price_wei,
+                'max_resale_price_wei': ing.evento.max_resale_price_wei if ing.evento else None,
             })
 
+        resultado = list(eventos_map.values())
         return jsonify({'ingressos': resultado, 'total': len(resultado)}), 200
 
     except Exception as e:
@@ -198,12 +200,12 @@ def listar_ingressos_evento(evento_id):
 
         ingressos = db.query(Ingresso).filter(Ingresso.id_evento == evento_id).all()
 
-        # Contar quantidade vendida
-        quantidade_vendida = db.query(Compra).filter(
-            Compra.id_evento == evento_id
-        ).with_entities(
-            func.sum(Compra.quantidade_ingressos)
-        ).scalar() or 0
+        # Contar quantidade vendida direto na tabela Ingresso
+        # (mints via MetaMask não criam Compra, então contar por Compra era incorreto)
+        quantidade_vendida = db.query(Ingresso).filter(
+            Ingresso.id_evento == evento_id,
+            Ingresso.status != 'disponivel'
+        ).count()
 
         disponivel = evento.quantidade_ingressos - quantidade_vendida
 
@@ -255,8 +257,11 @@ def obter_ingresso(ingresso_id):
         return jsonify({
             'id': ingresso.id,
             'id_evento': ingresso.id_evento,
-            'evento': ingresso.evento.nome,
-            'status': 'ativo'
+            'evento': ingresso.evento.nome if ingresso.evento else None,
+            'status': ingresso.status,
+            'token_id': ingresso.token_id,
+            'tx_hash': ingresso.tx_hash,
+            'carteira_comprador': ingresso.carteira_comprador,
         }), 200
 
     except Exception as e:
@@ -336,9 +341,11 @@ def transferir_ingresso(ingresso_id):
       db.close()
       
 
-# ======================== DELETE - CANCELAR COMPRA ========================
-@ingressos_bp.route('/cancelar/<int:compra_id>', methods=['DELETE'])
-@token_required
+# ======================== [LEGADO] DELETE - CANCELAR COMPRA ========================
+# ATENÇÃO: rota legada — dependia do fluxo /comprar que foi substituído por /registrar-mint.
+# Mantida apenas para referência histórica no TCC.
+# @ingressos_bp.route('/cancelar/<int:compra_id>', methods=['DELETE'])
+# @token_required
 def cancelar_compra(compra_id):
     """
     Cancelar compra
@@ -396,6 +403,209 @@ def cancelar_compra(compra_id):
             'mensagem': 'Compra cancelada com sucesso',
             'id_compra': compra_id,
             'quantidade_reembolsada': compra.quantidade_ingressos
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== POST - ANUNCIAR REVENDA ========================
+@ingressos_bp.route('/<int:ingresso_id>/anunciar-revenda', methods=['POST'])
+@token_required
+def anunciar_revenda(ingresso_id):
+    """
+    Anunciar ingresso para revenda
+    ---
+    tags:
+      - Ingressos
+    summary: Anunciar revenda
+    description: |
+      Registra o ingresso como à venda no banco após o frontend assinar listForResale()
+      via MetaMask. O tx_hash da transação on-chain é salvo para rastreabilidade.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: ingresso_id
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [price_wei, tx_hash]
+          properties:
+            price_wei:
+              type: integer
+              example: 1500000000000000
+              description: "Preço de revenda em wei"
+            tx_hash:
+              type: string
+              description: "Hash da transação listForResale() já assinada via MetaMask"
+    responses:
+      200:
+        description: Ingresso anunciado para revenda
+      400:
+        description: Erro de validação
+      401:
+        description: Token não fornecido / inválido
+      403:
+        description: Apenas clientes podem anunciar revenda
+    """
+    if request.usuario_tipo != TipoUsuario.CLIENTE:
+        return jsonify({'erro': 'Apenas clientes podem anunciar revenda'}), 403
+
+    db = SessionLocal()
+    try:
+        data = request.get_json() or {}
+        price_wei = data.get('price_wei')
+        tx_hash = data.get('tx_hash')
+
+        if price_wei is None:
+            return jsonify({'erro': 'price_wei é obrigatório'}), 400
+        if not tx_hash:
+            return jsonify({'erro': 'tx_hash é obrigatório (assine via MetaMask antes)'}), 400
+
+        service = _make_ingresso_service(db)
+        ingresso = service.anunciar_revenda(
+            id_ingresso=ingresso_id,
+            id_dono=request.usuario_id,
+        )
+
+        ingresso.resale_price_wei = str(price_wei)
+        ingresso.tx_hash = tx_hash  # atualiza com o hash da transação de listagem
+        db.commit()
+
+        return jsonify({
+            'mensagem': 'Ingresso anunciado para revenda',
+            'ingresso_id': ingresso.id,
+            'token_id': ingresso.token_id,
+            'resale_price_wei': str(price_wei),
+            'tx_hash': tx_hash,
+        }), 200
+
+    except (ValidationError, NotFoundError) as e:
+        return jsonify({'erro': str(e)}), 400
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== GET - LISTAR REVENDAS DE UM EVENTO ========================
+@ingressos_bp.route('/evento/<int:evento_id>/revenda', methods=['GET'])
+def listar_revenda_evento(evento_id):
+    """
+    Listar ingressos à venda no mercado de revenda de um evento
+    ---
+    tags:
+      - Ingressos
+    parameters:
+      - in: path
+        name: evento_id
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Lista de ingressos em revenda
+    """
+    db = SessionLocal()
+    try:
+        ingressos = db.query(Ingresso).filter(
+            Ingresso.id_evento == evento_id,
+            Ingresso.status == 'a_venda'
+        ).all()
+
+        return jsonify({
+            'revendas': [{
+                'id': ing.id,
+                'token_id': ing.token_id,
+                'resale_price_wei': ing.resale_price_wei,
+                'carteira_vendedor': ing.carteira_comprador,
+            } for ing in ingressos]
+        }), 200
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== POST - COMPRAR REVENDA ========================
+@ingressos_bp.route('/<int:ingresso_id>/comprar-revenda', methods=['POST'])
+@token_required
+def comprar_revenda(ingresso_id):
+    """
+    Comprar ingresso em revenda após pagamento MetaMask
+    ---
+    tags:
+      - Ingressos
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: ingresso_id
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [tx_hash, carteira_comprador]
+          properties:
+            tx_hash:
+              type: string
+            carteira_comprador:
+              type: string
+    responses:
+      200:
+        description: Revenda concluída
+      400:
+        description: Erro
+      403:
+        description: Apenas clientes podem comprar
+      404:
+        description: Ingresso não encontrado ou não está à venda
+    """
+    if request.usuario_tipo != TipoUsuario.CLIENTE:
+        return jsonify({'erro': 'Apenas clientes podem comprar ingressos'}), 403
+
+    db = SessionLocal()
+    try:
+        data = request.get_json() or {}
+        tx_hash = data.get('tx_hash')
+        carteira = data.get('carteira_comprador')
+
+        if not tx_hash or not carteira:
+            return jsonify({'erro': 'tx_hash e carteira_comprador são obrigatórios'}), 400
+
+        ingresso = db.query(Ingresso).filter(Ingresso.id == ingresso_id).first()
+        if not ingresso:
+            return jsonify({'erro': 'Ingresso não encontrado'}), 404
+        if ingresso.status != 'a_venda':
+            return jsonify({'erro': 'Ingresso não está disponível para revenda'}), 400
+
+        ingresso.id_cliente = request.usuario_id
+        ingresso.status = 'ativo'
+        ingresso.carteira_comprador = carteira
+        ingresso.tx_hash = tx_hash
+        ingresso.resale_price_wei = None
+        db.commit()
+
+        return jsonify({
+            'mensagem': 'Revenda concluída com sucesso',
+            'ingresso_id': ingresso.id,
+            'token_id': ingresso.token_id,
+            'tx_hash': tx_hash,
         }), 200
 
     except Exception as e:

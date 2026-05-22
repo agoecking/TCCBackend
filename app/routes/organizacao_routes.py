@@ -22,7 +22,7 @@ def criar_organizacao():
         required: true
         schema:
           type: object
-          required: [nome, cnpj, acesso_ethereum]
+          required: [nome, cnpj, carteira_ethereum]
           properties:
             nome:
               type: string
@@ -30,7 +30,7 @@ def criar_organizacao():
             cnpj:
               type: string
               example: "12.345.678/0001-90"
-            acesso_ethereum:
+            carteira_ethereum:
               type: string
               example: "0xorg"
     responses:
@@ -45,7 +45,7 @@ def criar_organizacao():
     try:
         data = request.get_json() or {}
 
-        required = ["nome", "cnpj", "acesso_ethereum"]
+        required = ["nome", "cnpj", "carteira_ethereum"]
         if not all(k in data for k in required):
             return jsonify({"erro": "Campos obrigatórios faltando"}), 400
 
@@ -58,7 +58,7 @@ def criar_organizacao():
             id=None,
             nome=data["nome"],
             cnpj=data["cnpj"],
-            acesso_ethereum=data["acesso_ethereum"],
+            carteira_ethereum=data["carteira_ethereum"],
         )
 
         db.add(org)
@@ -70,7 +70,7 @@ def criar_organizacao():
             "id": org.id,
             "nome": org.nome,
             "cnpj": org.cnpj,
-            "acesso_ethereum": org.acesso_ethereum,
+            "carteira_ethereum": org.carteira_ethereum,
         }), 201
     except Exception as e:
         db.rollback()
@@ -100,7 +100,7 @@ def listar_organizacoes():
             "id": o.id,
             "nome": o.nome,
             "cnpj": o.cnpj,
-            "acesso_ethereum": o.acesso_ethereum,
+            "carteira_ethereum": o.carteira_ethereum,
         } for o in orgs]), 200
     except Exception as e:
         return jsonify({"erro": str(e)}), 400
@@ -140,7 +140,7 @@ def obter_organizacao(org_id):
             "id": org.id,
             "nome": org.nome,
             "cnpj": org.cnpj,
-            "acesso_ethereum": org.acesso_ethereum,
+            "carteira_ethereum": org.carteira_ethereum,
         }), 200
     except Exception as e:
         return jsonify({"erro": str(e)}), 400
@@ -176,7 +176,7 @@ def atualizar_organizacao(org_id):
             cnpj:
               type: string
               example: "12.345.678/0001-90"
-            acesso_ethereum:
+            carteira_ethereum:
               type: string
               example: "0xorg"
     responses:
@@ -210,8 +210,8 @@ def atualizar_organizacao(org_id):
                 return jsonify({"erro": "CNPJ já registrado"}), 409
             org.cnpj = data["cnpj"]
 
-        if "acesso_ethereum" in data:
-            org.acesso_ethereum = data["acesso_ethereum"]
+        if "carteira_ethereum" in data:
+            org.carteira_ethereum = data["carteira_ethereum"]
 
         db.commit()
         db.refresh(org)
@@ -221,7 +221,7 @@ def atualizar_organizacao(org_id):
             "id": org.id,
             "nome": org.nome,
             "cnpj": org.cnpj,
-            "acesso_ethereum": org.acesso_ethereum,
+            "carteira_ethereum": org.carteira_ethereum,
         }), 200
     except Exception as e:
         db.rollback()
