@@ -18,7 +18,8 @@ import jwt
 import os
 
 JWT_SECRET = os.getenv("JWT_SECRET_KEY", "tccbackend-dev-local-secret-key-fixa")
-QR_TOKEN_TTL_SECONDS = 300  # 5 minutos
+QR_TOKEN_TTL_SECONDS = 300   # 5 minutos
+MAX_REVENDAS = 3             # Máximo de vezes que um ingresso pode ser revendido (anti-cambismo off-chain)
 
 ingressos_bp = Blueprint('ingressos', __name__, url_prefix='/api/ingressos')
 
@@ -163,6 +164,8 @@ def meus_ingressos():
                 'carteira_comprador': ing.carteira_comprador,
                 'resale_price_wei': ing.resale_price_wei,
                 'max_resale_price_wei': ing.evento.max_resale_price_wei if ing.evento else None,
+                'num_revendas': ing.num_revendas or 0,
+                'revendas_restantes': MAX_REVENDAS - (ing.num_revendas or 0),
             })
 
         resultado = list(eventos_map.values())
@@ -484,6 +487,13 @@ def anunciar_revenda(ingresso_id):
             id_dono=request.usuario_id,
         )
 
+        # Anti-cambismo off-chain: bloqueia após MAX_REVENDAS revendas
+        num = ingresso.num_revendas or 0
+        if num >= MAX_REVENDAS:
+            return jsonify({
+                'erro': f'Este ingresso já foi revendido {num} vez(es) e atingiu o limite de {MAX_REVENDAS} revendas permitidas.'
+            }), 403
+
         ingresso.resale_price_wei = str(price_wei)
         ingresso.tx_hash = tx_hash  # atualiza com o hash da transação de listagem
         db.commit()
@@ -494,6 +504,8 @@ def anunciar_revenda(ingresso_id):
             'token_id': ingresso.token_id,
             'resale_price_wei': str(price_wei),
             'tx_hash': tx_hash,
+            'num_revendas': ingresso.num_revendas,
+            'revendas_restantes': MAX_REVENDAS - num,
         }), 200
 
     except (ValidationError, NotFoundError) as e:
@@ -605,6 +617,7 @@ def comprar_revenda(ingresso_id):
         ingresso.carteira_comprador = carteira
         ingresso.tx_hash = tx_hash
         ingresso.resale_price_wei = None
+        ingresso.num_revendas = (ingresso.num_revendas or 0) + 1  # contabiliza esta revenda
         db.commit()
 
         return jsonify({
@@ -612,6 +625,7 @@ def comprar_revenda(ingresso_id):
             'ingresso_id': ingresso.id,
             'token_id': ingresso.token_id,
             'tx_hash': tx_hash,
+            'num_revendas': ingresso.num_revendas,
         }), 200
 
     except Exception as e:
