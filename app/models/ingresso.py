@@ -17,12 +17,15 @@ class Ingresso(Base):
     carteira_comprador = Column(String(42), nullable=True)
     resale_price_wei = Column(String(32), nullable=True)
 
+    # Anti-cambismo off-chain: quantas vezes este ingresso já foi revendido
+    num_revendas = Column(Integer, default=0, nullable=False)
+
     evento = relationship("Evento", back_populates="ingressos")
     cliente = relationship("UsuarioCliente", backref="ingressos", foreign_keys=[id_cliente])
 
     def __init__(self, id_evento: int, id_cliente: int = None, status: str = "disponivel",
                  token_id: int = None, tx_hash: str = None, carteira_comprador: str = None,
-                 resale_price_wei: str = None):
+                 resale_price_wei: str = None, num_revendas: int = 0):
         self.id_evento = id_evento
         self.id_cliente = id_cliente
         self.status = status
@@ -30,3 +33,4 @@ class Ingresso(Base):
         self.tx_hash = tx_hash
         self.carteira_comprador = carteira_comprador
         self.resale_price_wei = resale_price_wei
+        self.num_revendas = num_revendas

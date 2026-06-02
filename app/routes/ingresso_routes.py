@@ -10,9 +10,16 @@ from app.repositories.evento_repository import EventoRepository
 from app.repositories.compra_repository import CompraRepository
 from app.repositories.ingresso_repository import IngressoRepository
 from app.services.ingresso_service import IngressoService
+from app.services.transacao import TransacaoService
 from app.services.errors import ValidationError, NotFoundError
 from sqlalchemy import func
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+import jwt
+import os
+
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "tccbackend-dev-local-secret-key-fixa")
+QR_TOKEN_TTL_SECONDS = 300   # 5 minutos
+MAX_REVENDAS = 3             # Máximo de vezes que um ingresso pode ser revendido (anti-cambismo off-chain)
 
 ingressos_bp = Blueprint('ingressos', __name__, url_prefix='/api/ingressos')
 
@@ -157,6 +164,8 @@ def meus_ingressos():
                 'carteira_comprador': ing.carteira_comprador,
                 'resale_price_wei': ing.resale_price_wei,
                 'max_resale_price_wei': ing.evento.max_resale_price_wei if ing.evento else None,
+                'num_revendas': ing.num_revendas or 0,
+                'revendas_restantes': MAX_REVENDAS - (ing.num_revendas or 0),
             })
 
         resultado = list(eventos_map.values())
@@ -478,6 +487,13 @@ def anunciar_revenda(ingresso_id):
             id_dono=request.usuario_id,
         )
 
+        # Anti-cambismo off-chain: bloqueia após MAX_REVENDAS revendas
+        num = ingresso.num_revendas or 0
+        if num >= MAX_REVENDAS:
+            return jsonify({
+                'erro': f'Este ingresso já foi revendido {num} vez(es) e atingiu o limite de {MAX_REVENDAS} revendas permitidas.'
+            }), 403
+
         ingresso.resale_price_wei = str(price_wei)
         ingresso.tx_hash = tx_hash  # atualiza com o hash da transação de listagem
         db.commit()
@@ -488,6 +504,8 @@ def anunciar_revenda(ingresso_id):
             'token_id': ingresso.token_id,
             'resale_price_wei': str(price_wei),
             'tx_hash': tx_hash,
+            'num_revendas': ingresso.num_revendas,
+            'revendas_restantes': MAX_REVENDAS - num,
         }), 200
 
     except (ValidationError, NotFoundError) as e:
@@ -599,6 +617,7 @@ def comprar_revenda(ingresso_id):
         ingresso.carteira_comprador = carteira
         ingresso.tx_hash = tx_hash
         ingresso.resale_price_wei = None
+        ingresso.num_revendas = (ingresso.num_revendas or 0) + 1  # contabiliza esta revenda
         db.commit()
 
         return jsonify({
@@ -606,6 +625,265 @@ def comprar_revenda(ingresso_id):
             'ingresso_id': ingresso.id,
             'token_id': ingresso.token_id,
             'tx_hash': tx_hash,
+            'num_revendas': ingresso.num_revendas,
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== POST - CANCELAR REVENDA ========================
+@ingressos_bp.route('/<int:ingresso_id>/cancelar-revenda', methods=['POST'])
+@token_required
+def cancelar_revenda(ingresso_id):
+    """
+    Cancela o anúncio de revenda de um ingresso
+    ---
+    tags:
+      - Ingressos
+    summary: Cancelar revenda
+    description: |
+      O dono do ingresso assina cancelResaleListing() no contrato via MetaMask
+      e envia o tx_hash para este endpoint, que muda o status de volta para 'ativo'.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: path
+        name: ingresso_id
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [tx_hash]
+          properties:
+            tx_hash:
+              type: string
+              example: "0xabc..."
+    responses:
+      200:
+        description: Revenda cancelada
+      400:
+        description: Ingresso não está à venda ou tx_hash faltando
+      403:
+        description: Ingresso pertence a outro cliente
+      404:
+        description: Ingresso não encontrado
+    """
+    db = SessionLocal()
+    try:
+        data = request.get_json() or {}
+        tx_hash = data.get('tx_hash')
+        if not tx_hash:
+            return jsonify({'erro': 'tx_hash é obrigatório'}), 400
+
+        ingresso = db.query(Ingresso).filter(Ingresso.id == ingresso_id).first()
+        if not ingresso:
+            return jsonify({'erro': 'Ingresso não encontrado'}), 404
+        if ingresso.id_cliente != request.usuario_id:
+            return jsonify({'erro': 'Você não é o dono deste ingresso'}), 403
+        if ingresso.status != 'a_venda':
+            return jsonify({'erro': 'Ingresso não está à venda'}), 400
+
+        ingresso.status = 'ativo'
+        ingresso.resale_price_wei = None
+        ingresso.tx_hash = tx_hash
+        db.commit()
+
+        return jsonify({
+            'mensagem': 'Revenda cancelada com sucesso',
+            'ingresso_id': ingresso.id,
+            'token_id': ingresso.token_id,
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== GET - GERAR TOKEN QR (JWT curta duração) ========================
+@ingressos_bp.route('/<int:ingresso_id>/gerar-qr', methods=['GET'])
+@token_required
+def gerar_qr(ingresso_id):
+    """
+    Gera um token JWT de curta duração para o QR Code do ingresso
+    ---
+    tags:
+      - Ingressos
+    summary: Gerar token QR
+    description: |
+      Retorna um JWT assinado com validade de 5 minutos contendo ingresso_id,
+      token_id e evento_id. O QR Code deve exibir este token — não o tokenId puro.
+    security:
+      - BearerAuth: []
+    responses:
+      200:
+        description: Token gerado
+      403:
+        description: Ingresso pertence a outro cliente
+      404:
+        description: Ingresso não encontrado
+    """
+    db = SessionLocal()
+    try:
+        ingresso = db.query(Ingresso).filter(Ingresso.id == ingresso_id).first()
+        if not ingresso:
+            return jsonify({'erro': 'Ingresso não encontrado'}), 404
+        if ingresso.id_cliente != request.usuario_id:
+            return jsonify({'erro': 'Você não é o dono deste ingresso'}), 403
+        if ingresso.status not in ('ativo', 'a_venda'):
+            return jsonify({'erro': 'Ingresso não está ativo'}), 400
+
+        payload = {
+            'ingresso_id': ingresso.id,
+            'token_id':    ingresso.token_id,
+            'evento_id':   ingresso.id_evento,
+            'exp':         datetime.now(timezone.utc) + timedelta(seconds=QR_TOKEN_TTL_SECONDS),
+        }
+        qr_token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+
+        return jsonify({
+            'qr_token': qr_token,
+            'expira_em': QR_TOKEN_TTL_SECONDS,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+# ======================== POST - VALIDAR INGRESSO NA ENTRADA ========================
+@ingressos_bp.route('/validar', methods=['POST'])
+@token_required
+def validar_ingresso():
+    """
+    Valida ingresso na entrada do evento (somente ORGANIZAÇÃO)
+    ---
+    tags:
+      - Ingressos
+    summary: Validar ingresso na entrada
+    description: |
+      Recebe o token_id do ingresso, verifica na blockchain (isTicketValid)
+      e no banco (status != 'utilizado'). Se válido, marca como 'utilizado'.
+      Somente usuários do tipo ORGANIZAÇÃO podem chamar este endpoint.
+    security:
+      - BearerAuth: []
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: [token_id, evento_id]
+          properties:
+            token_id:
+              type: integer
+              example: 5
+            evento_id:
+              type: integer
+              example: 3
+    responses:
+      200:
+        description: Ingresso válido — marcado como utilizado
+      400:
+        description: Ingresso já utilizado ou não pertence a este evento
+      403:
+        description: Apenas ORGANIZAÇÃO pode validar ingressos
+      404:
+        description: Ingresso não encontrado no banco
+      422:
+        description: Token inválido na blockchain (NFT não existe)
+    """
+    if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
+        return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode validar ingressos'}), 403
+
+    db = SessionLocal()
+    try:
+        data = request.get_json() or {}
+        qr_token = data.get('qr_token')
+        evento_id = data.get('evento_id')
+
+        if not qr_token or not evento_id:
+            return jsonify({'erro': 'qr_token e evento_id são obrigatórios'}), 400
+
+        # 1. Decodificar e verificar o JWT (assinatura + expiração)
+        try:
+            payload = jwt.decode(qr_token, JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return jsonify({
+                'valido': False,
+                'motivo': 'QR Code expirado. Peça ao portador para gerar um novo.'
+            }), 400
+        except jwt.InvalidTokenError:
+            return jsonify({
+                'valido': False,
+                'motivo': 'QR Code inválido ou falsificado.'
+            }), 400
+
+        token_id   = payload.get('token_id')
+        ingresso_id = payload.get('ingresso_id')
+
+        # 2. Verificar se o evento bate com o do JWT
+        if int(payload.get('evento_id', -1)) != int(evento_id):
+            return jsonify({
+                'valido': False,
+                'motivo': 'Este ingresso não pertence ao evento selecionado.'
+            }), 400
+
+        # 3. Verificar na blockchain
+        try:
+            transacao_svc = TransacaoService()
+            valido_onchain = transacao_svc.validar_ingresso(int(token_id))
+        except Exception as e:
+            return jsonify({'erro': f'Erro ao consultar blockchain: {str(e)}'}), 422
+
+        if not valido_onchain:
+            return jsonify({
+                'valido': False,
+                'motivo': 'NFT não existe na blockchain.'
+            }), 422
+
+        # 4. Verificar no banco
+        ingresso = db.query(Ingresso).filter(Ingresso.id == ingresso_id).first()
+
+        if not ingresso:
+            return jsonify({'erro': 'Ingresso não encontrado'}), 404
+
+        if ingresso.status == 'utilizado':
+            return jsonify({
+                'valido': False,
+                'motivo': 'Ingresso já foi utilizado na entrada.'
+            }), 400
+
+        if ingresso.status not in ('ativo', 'a_venda'):
+            return jsonify({
+                'valido': False,
+                'motivo': f'Status inválido: {ingresso.status}'
+            }), 400
+
+        # 5. Marcar como utilizado
+        ingresso.status = 'utilizado'
+        db.commit()
+
+        return jsonify({
+            'valido': True,
+            'mensagem': 'Ingresso válido! Entrada liberada.',
+            'ingresso_id': ingresso.id,
+            'token_id': ingresso.token_id,
+            'evento': ingresso.evento.nome if ingresso.evento else None,
+            'carteira_comprador': ingresso.carteira_comprador,
         }), 200
 
     except Exception as e:

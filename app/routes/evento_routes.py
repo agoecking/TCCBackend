@@ -133,10 +133,62 @@ def criar_evento():
             return jsonify({'erro': 'Usuário de organização não encontrado'}), 404
 
         repo = EventoRepository(db)
-
         ticket_price_wei = data.get('ticket_price_wei')
         max_resale_price_wei = data.get('max_resale_price_wei')
 
+        # ── Verificar duplicata confirmada na chain ───────────────────────────
+        duplicata = db.query(Evento).filter(
+            Evento.nome == data['nome'],
+            Evento.id_organizacao == usuario.organizacao_id,
+            Evento.blockchain_event_id.isnot(None)
+        ).first()
+        if duplicata:
+            return jsonify({'erro': f"Já existe um evento com este nome registrado na blockchain (id={duplicata.id})"}), 409
+
+        # ── Verificar órfão: salvo no banco mas sem blockchain_event_id ───────
+        orfao = db.query(Evento).filter(
+            Evento.nome == data['nome'],
+            Evento.id_organizacao == usuario.organizacao_id,
+            Evento.blockchain_event_id.is_(None)
+        ).first()
+
+        if orfao and ticket_price_wei is not None:
+            # Tentar registrar o órfão na chain em vez de criar novo registro
+            try:
+                transacao_svc = TransacaoService()
+                _max_resale = int(max_resale_price_wei) if max_resale_price_wei is not None else 0
+                blockchain_event_id = transacao_svc.criar_evento_blockchain(
+                    nome=orfao.nome,
+                    ticket_price_wei=int(ticket_price_wei),
+                    max_tickets=orfao.quantidade_ingressos,
+                    max_resale_price_wei=_max_resale,
+                    royalty_bps=int(data.get('royalty_bps', 1000)),
+                    organizer_address=usuario.organizacao.carteira_ethereum or None,
+                )
+                orfao.blockchain_event_id = blockchain_event_id
+                orfao.ticket_price_wei = str(ticket_price_wei)
+                orfao.max_resale_price_wei = str(_max_resale)
+                db.commit()
+                db.refresh(orfao)
+            except Exception as e:
+                return jsonify({'erro': f'Falha ao registrar evento pendente na blockchain: {str(e)}'}), 500
+
+            return jsonify({
+                'id': orfao.id,
+                'nome': orfao.nome,
+                'quantidade_ingressos': orfao.quantidade_ingressos,
+                'data_hora': orfao.data_hora,
+                'local_evento': orfao.local_evento,
+                'descricao_evento': orfao.descricao_evento,
+                'id_organizacao': orfao.id_organizacao,
+                'id_usuario': orfao.id_usuario,
+                'blockchain_event_id': orfao.blockchain_event_id,
+                'ticket_price_wei': orfao.ticket_price_wei,
+                'max_resale_price_wei': orfao.max_resale_price_wei,
+                'recuperado': True,
+            }), 201
+
+        # ── Criação normal ────────────────────────────────────────────────────
         evento = Evento(
             id=None,
             nome=data['nome'],
@@ -154,7 +206,7 @@ def criar_evento():
         db.commit()
         db.refresh(evento)
 
-        # ── Registrar evento no contrato KoynTicket se preço informado ────
+        # ── Registrar no contrato KoynTicket ──────────────────────────────────
         if ticket_price_wei is not None:
             try:
                 transacao_svc = TransacaoService()
@@ -165,11 +217,13 @@ def criar_evento():
                     max_tickets=data['quantidade_ingressos'],
                     max_resale_price_wei=_max_resale,
                     royalty_bps=int(data.get('royalty_bps', 1000)),
+                    organizer_address=usuario.organizacao.carteira_ethereum or None,
                 )
                 evento.blockchain_event_id = blockchain_event_id
                 db.commit()
             except Exception as e:
-                print(f"[Blockchain] Erro ao criar evento {evento.id} no contrato: {e}")
+                # Evento salvo no banco sem blockchain_event_id — será recuperado na próxima tentativa
+                print(f"[Blockchain] Evento id={evento.id} salvo sem blockchain_event_id: {e}")
 
         return jsonify({
             'id': evento.id,
@@ -312,6 +366,12 @@ def atualizar_evento(id):
             evento.nome = data['nome']
         if 'quantidade_ingressos' in data:
             evento.quantidade_ingressos = data['quantidade_ingressos']
+        if 'descricao_evento' in data:
+            evento.descricao_evento = data['descricao_evento']
+        if 'local_evento' in data:
+            evento.local_evento = data['local_evento']
+        if 'data_hora' in data:
+            evento.data_hora = data['data_hora']
 
         db.commit()
         db.refresh(evento)
@@ -320,6 +380,9 @@ def atualizar_evento(id):
             'id': evento.id,
             'nome': evento.nome,
             'quantidade_ingressos': evento.quantidade_ingressos,
+            'descricao_evento': evento.descricao_evento,
+            'local_evento': evento.local_evento,
+            'data_hora': evento.data_hora,
             'id_organizacao': evento.id_organizacao
         }), 200
 
