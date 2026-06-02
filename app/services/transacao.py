@@ -80,6 +80,13 @@ CONTRACT_ABI = [
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "totalEvents",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "name": "resaleListings",
         "outputs": [
@@ -201,14 +208,16 @@ class BlockchainService:
         Returns:
             blockchain_event_id (int)
         """
-        fn      = self.contract.functions.createEvent(
+        # Lê o próximo ID ANTES da transação — contrato usa _nextEventId++
+        # Mais confiável que process_receipt (que pode retornar lista vazia no web3.py v7)
+        event_id = self.contract.functions.totalEvents().call()
+
+        fn = self.contract.functions.createEvent(
             name, ticket_price_wei, max_tickets, max_resale_price_wei, royalty_bps,
             Web3.to_checksum_address(organizer_address)
         )
-        receipt = self._send_transaction(fn)
+        self._send_transaction(fn)
 
-        logs     = self.contract.events.EventCreated().process_receipt(receipt)
-        event_id = logs[0]["args"]["eventId"] if logs else None
         return event_id
 
     def mint_ticket(self, blockchain_event_id: int, token_uri: str) -> dict:

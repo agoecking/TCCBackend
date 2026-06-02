@@ -222,8 +222,15 @@ def criar_evento():
                 evento.blockchain_event_id = blockchain_event_id
                 db.commit()
             except Exception as e:
-                # Evento salvo no banco sem blockchain_event_id — será recuperado na próxima tentativa
-                print(f"[Blockchain] Evento id={evento.id} salvo sem blockchain_event_id: {e}")
+                import traceback
+                print(f"[Blockchain] ERRO ao registrar evento id={evento.id} no contrato: {e}")
+                print(traceback.format_exc())
+
+        if ticket_price_wei is not None and evento.blockchain_event_id is None:
+            return jsonify({
+                'erro': 'Evento salvo no banco mas falhou ao registrar na blockchain. Tente criar o evento novamente com o mesmo nome para recuperar o registro.',
+                'id': evento.id,
+            }), 500
 
         return jsonify({
             'id': evento.id,
