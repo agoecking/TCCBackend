@@ -565,7 +565,7 @@ def register_organizacao():
             id=None,
             nome=org_data["nome"],
             cnpj=org_data["cnpj"],
-            carteira_ethereum=org_data.get("carteira_ethereum") or None,  # opcional — salvo via Navbar
+            carteira_ethereum=org_data.get("carteira_ethereum") or "",  # opcional — salvo via Navbar
         )
         db.add(org)
         db.flush()

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CONTRACT_ADDRESS = "0x8757cde93797e8cE0543e2fCa23714D231d9c86D"
+CONTRACT_ADDRESS = "0x998B81b2DA9677e84B892d0A02Aa2c4238676CD6"
 
 # ABI mínima com as funções usadas pelo backend
 CONTRACT_ABI = [
@@ -96,7 +96,8 @@ CONTRACT_ABI = [
             {"internalType": "uint256", "name": "ticketPrice",    "type": "uint256"},
             {"internalType": "uint256", "name": "maxTickets",     "type": "uint256"},
             {"internalType": "uint256", "name": "maxResalePrice", "type": "uint256"},
-            {"internalType": "uint256", "name": "royaltyBps",     "type": "uint256"}
+            {"internalType": "uint256", "name": "royaltyBps",     "type": "uint256"},
+            {"internalType": "address", "name": "organizer",      "type": "address"}
         ],
         "name": "createEvent",
         "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
@@ -184,7 +185,8 @@ class BlockchainService:
     # ── Funções de escrita ────────────────────────────────────────────────────
 
     def create_event(self, name: str, ticket_price_wei: int, max_tickets: int,
-                     max_resale_price_wei: int, royalty_bps: int) -> int:
+                     max_resale_price_wei: int, royalty_bps: int,
+                     organizer_address: str) -> int:
         """
         Chama createEvent() no contrato e retorna o blockchain_event_id.
 
@@ -194,12 +196,14 @@ class BlockchainService:
             max_tickets:         Capacidade máxima
             max_resale_price_wei: Teto de revenda em wei (0 = sem limite)
             royalty_bps:         Royalty do organizador em basis points (1000 = 10%)
+            organizer_address:   Carteira Ethereum da organização (recebe pagamentos)
 
         Returns:
             blockchain_event_id (int)
         """
         fn      = self.contract.functions.createEvent(
-            name, ticket_price_wei, max_tickets, max_resale_price_wei, royalty_bps
+            name, ticket_price_wei, max_tickets, max_resale_price_wei, royalty_bps,
+            Web3.to_checksum_address(organizer_address)
         )
         receipt = self._send_transaction(fn)
 
@@ -295,7 +299,8 @@ class TransacaoService:
         self.blockchain = BlockchainService()
 
     def criar_evento_blockchain(self, nome: str, ticket_price_wei: int, max_tickets: int,
-                                max_resale_price_wei: int = 0, royalty_bps: int = 1000) -> int:
+                                max_resale_price_wei: int = 0, royalty_bps: int = 1000,
+                                organizer_address: str = None) -> int:
         """
         Cria o evento no contrato KoynTicket.
 
@@ -305,12 +310,14 @@ class TransacaoService:
             max_tickets:          Capacidade máxima
             max_resale_price_wei: Teto de revenda em wei (0 = sem limite)
             royalty_bps:          Royalty em basis points (padrão: 1000 = 10%)
+            organizer_address:    Carteira Ethereum da organização (recebe pagamentos)
 
         Returns:
             blockchain_event_id (int)
         """
         return self.blockchain.create_event(
-            nome, ticket_price_wei, max_tickets, max_resale_price_wei, royalty_bps
+            nome, ticket_price_wei, max_tickets, max_resale_price_wei, royalty_bps,
+            organizer_address or self.blockchain.account.address
         )
 
     def mint_nft(self, blockchain_event_id: int, token_uri: str = "") -> dict:
