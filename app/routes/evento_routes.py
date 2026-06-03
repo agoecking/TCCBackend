@@ -166,8 +166,16 @@ def criar_evento():
                     organizer_address=usuario.organizacao.carteira_ethereum or None,
                 )
                 orfao.blockchain_event_id = blockchain_event_id
-                orfao.ticket_price_wei = str(ticket_price_wei)
-                orfao.max_resale_price_wei = str(_max_resale)
+
+                # Sincroniza DB com os valores reais da chain (fonte de verdade)
+                try:
+                    info = transacao_svc.info_evento_blockchain(blockchain_event_id)
+                    orfao.ticket_price_wei      = str(info['ticket_price_wei'])
+                    orfao.max_resale_price_wei  = str(info['max_resale_price_wei'])
+                except Exception:
+                    orfao.ticket_price_wei      = str(ticket_price_wei)
+                    orfao.max_resale_price_wei  = str(_max_resale)
+
                 db.commit()
                 db.refresh(orfao)
             except Exception as e:
@@ -220,6 +228,15 @@ def criar_evento():
                     organizer_address=usuario.organizacao.carteira_ethereum or None,
                 )
                 evento.blockchain_event_id = blockchain_event_id
+
+                # Sincroniza DB com os valores reais da chain (fonte de verdade)
+                try:
+                    info = transacao_svc.info_evento_blockchain(blockchain_event_id)
+                    evento.ticket_price_wei     = str(info['ticket_price_wei'])
+                    evento.max_resale_price_wei = str(info['max_resale_price_wei'])
+                except Exception:
+                    pass  # mantém os valores digitados se a leitura falhar
+
                 db.commit()
             except Exception as e:
                 import traceback
