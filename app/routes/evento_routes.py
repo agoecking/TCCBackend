@@ -468,10 +468,92 @@ def deletar_evento(id):
         if evento.id_organizacao != usuario.organizacao_id:
             return jsonify({'erro': 'Você não pode deletar eventos de outra organização'}), 403
 
+        # Desativar on-chain antes de deletar do banco
+        if evento.blockchain_event_id is not None:
+            try:
+                transacao_svc = TransacaoService()
+                transacao_svc.desativar_evento_blockchain(evento.blockchain_event_id)
+            except Exception as e:
+                print(f"[Blockchain] Aviso: falha ao desativar evento {evento.blockchain_event_id} on-chain: {e}")
+                # Não bloqueia a deleção do banco
+
         repo.delete(evento)
         db.commit()
 
         return jsonify({'mensagem': 'Evento deletado com sucesso'}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'erro': str(e)}), 400
+    finally:
+        db.close()
+
+
+@eventos_bp.route('/<int:id>/sync-chain', methods=['POST'])
+@token_required
+def sync_evento_chain(id):
+    """
+    Sincroniza os dados do evento com os valores reais da blockchain
+    ---
+    tags:
+      - Eventos
+    summary: Sincronizar evento com blockchain
+    description: |
+      Lê os valores reais de ticket_price_wei e max_resale_price_wei direto
+      do contrato KoynTicket e atualiza o banco de dados.
+      Útil quando o DB ficou desincronizado da chain por erros de criação.
+    security:
+      - BearerAuth: []
+    parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Evento sincronizado com sucesso
+      404:
+        description: Evento não encontrado ou sem blockchain_event_id
+      403:
+        description: Sem permissão
+    """
+    if request.usuario_tipo != TipoUsuario.ORGANIZACAO:
+        return jsonify({'erro': 'Apenas ORGANIZAÇÃO pode sincronizar eventos'}), 403
+
+    db = SessionLocal()
+    try:
+        usuario = db.query(UsuarioOrganizacao).filter(
+            UsuarioOrganizacao.id == request.usuario_id
+        ).first()
+        if not usuario:
+            return jsonify({'erro': 'Usuário não encontrado'}), 404
+
+        repo = EventoRepository(db)
+        evento = repo.get_by_id(id)
+        if not evento:
+            return jsonify({'erro': 'Evento não encontrado'}), 404
+        if evento.id_organizacao != usuario.organizacao_id:
+            return jsonify({'erro': 'Sem permissão para este evento'}), 403
+        if evento.blockchain_event_id is None:
+            return jsonify({'erro': 'Evento sem blockchain_event_id — não é possível sincronizar'}), 404
+
+        transacao_svc = TransacaoService()
+        info = transacao_svc.info_evento_blockchain(evento.blockchain_event_id)
+
+        evento.ticket_price_wei     = str(info['ticket_price_wei'])
+        evento.max_resale_price_wei = str(info['max_resale_price_wei'])
+        db.commit()
+
+        return jsonify({
+            'mensagem': 'Evento sincronizado com a blockchain',
+            'blockchain_event_id': evento.blockchain_event_id,
+            'ticket_price_wei': evento.ticket_price_wei,
+            'max_resale_price_wei': evento.max_resale_price_wei,
+            'ticket_price_eth': round(info['ticket_price_wei'] / 1e18, 6),
+            'max_resale_price_eth': round(info['max_resale_price_wei'] / 1e18, 6),
+            'organizer': info['organizer'],
+            'active': info['active'],
+        }), 200
 
     except Exception as e:
         db.rollback()

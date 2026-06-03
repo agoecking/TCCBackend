@@ -87,6 +87,13 @@ CONTRACT_ABI = [
         "type": "function"
     },
     {
+        "inputs": [{"internalType": "uint256", "name": "eventId", "type": "uint256"}],
+        "name": "deactivateEvent",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "name": "resaleListings",
         "outputs": [
@@ -375,3 +382,13 @@ class TransacaoService:
     def info_evento_blockchain(self, blockchain_event_id: int) -> dict:
         """Retorna dados do evento diretamente do contrato."""
         return self.blockchain.get_event_info(blockchain_event_id)
+
+    def desativar_evento_blockchain(self, blockchain_event_id: int) -> str:
+        """
+        Desativa o evento no contrato (encerra vendas).
+        Necessário antes de recriar um evento com preço corrigido.
+        Retorna tx_hash.
+        """
+        fn = self.blockchain.contract.functions.deactivateEvent(blockchain_event_id)
+        receipt = self.blockchain._send_transaction(fn)
+        return receipt.transactionHash.hex()
